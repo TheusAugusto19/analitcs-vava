@@ -153,6 +153,20 @@ def apply(data: dict, o: dict) -> dict:
             p["foto"] = salvar_foto(nome, o["foto"])
         if "elo" in o:
             p["elo"] = elo_valido(o.get("elo"))
+        if o.get("novoPin"):
+            if not PIN.match(str(o["novoPin"])):
+                raise ValueError("PIN precisa ter 4 números.")
+            p["pin"] = str(o["novoPin"])
+        novo = str(o.get("novoNome") or nome).strip()
+        if novo != nome:  # troca o nome (a chave) e atualiza os favoritos de todo mundo
+            if not novo or len(novo) > 24:
+                raise ValueError("Nome precisa ter de 1 a 24 caracteres.")
+            if any(k != nome and k.lower() == novo.lower() for k in perfis):
+                raise ValueError("Já existe um perfil com esse nome.")
+            data["perfis"] = {(novo if k == nome else k): v for k, v in perfis.items()}
+            for q in data["perfis"].values():
+                q["favoritos"] = [novo if f == nome else f for f in q.get("favoritos", [])]
+            return {"nome": novo}
 
     elif op == "registrar":
         jogo = o.get("jogo")

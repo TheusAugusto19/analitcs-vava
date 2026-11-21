@@ -374,6 +374,10 @@ function renderPerfil(nome){
       <details class="card edit"><summary>✎ Editar perfil (foto e elo)</summary>
         <form id="editForm" class="add">
           <label class="fotopick">${ava(nome, 56)}<span>Trocar foto</span><input type="file" accept="image/*" id="editFoto" hidden></label>
+          <div class="row2">
+            <label class="f">Nome<input class="inp" id="editNome" value="${esc(nome)}" maxlength="24" required></label>
+            <label class="f">Novo PIN<input class="inp" id="editPin" placeholder="••••" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" title="4 números"></label>
+          </div>
           ${eloPicker("editElo", p.elo)}
           <button class="btn">Salvar alterações</button>
         </form>
@@ -541,8 +545,10 @@ document.addEventListener("submit", async e => {
     if (f.id === "editForm") {
       const foto = await lerFoto($("editFoto").files[0]);
       const sel = f.querySelector('input[name="editElo"]:checked');
-      await acao(comPin({ op: "perfil_editar", ...(foto ? { foto } : {}), ...(sel ? { elo: sel.value } : {}) }));
-      render(); toast("Perfil atualizado.");
+      const novoNome = $("editNome").value.trim(), novoPin = $("editPin").value.trim();
+      const nome = await acao(comPin({ op: "perfil_editar", novoNome, ...(novoPin ? { novoPin } : {}), ...(foto ? { foto } : {}), ...(sel ? { elo: sel.value } : {}) }));
+      sessao = { nome, pin: novoPin || sessao.pin }; try { sessionStorage.setItem("sessao", JSON.stringify(sessao)); } catch {}
+      view = nome; render(); toast("Perfil atualizado.");
     }
     if (f.id === "addForm") {
       const foto = await lerFoto($("addFoto").files[0]);
@@ -620,6 +626,15 @@ function aplicar(data, o){
   if (o.op === "perfil_editar") {
     if (o.foto) p.foto = o.foto;
     if ("elo" in o) { if (!ELOS.includes(o.elo || "")) throw new Error("Elo inválido."); p.elo = o.elo || ""; }
+    if (o.novoPin) { if (!/^\d{4}$/.test(o.novoPin)) throw new Error("PIN precisa ter 4 números."); p.pin = o.novoPin; }
+    const nn = String(o.novoNome ?? nome).trim();
+    if (nn !== nome) { // troca o nome (a chave) e atualiza os favoritos de todo mundo
+      if (!nn || nn.length > 24) throw new Error("Nome precisa ter de 1 a 24 caracteres.");
+      if (Object.keys(data.perfis).some(k => k !== nome && k.toLowerCase() === nn.toLowerCase())) throw new Error("Já existe um perfil com esse nome.");
+      data.perfis = Object.fromEntries(Object.entries(data.perfis).map(([k, v]) => [k === nome ? nn : k, v]));
+      for (const q of Object.values(data.perfis)) q.favoritos = (q.favoritos || []).map(f => f === nome ? nn : f);
+      return nn;
+    }
   } else if (o.op === "registrar") {
     if (!JOGOS[o.jogo]) throw new Error("Jogo inválido.");
     const g = Math.trunc(+o.ganhou || 0), l = Math.trunc(+o.perdeu || 0);
@@ -711,7 +726,7 @@ function githubBackend(token){
         await ler();
         const nome = aplicar(structuredClone(data), resto); // valida antes de subir qualquer coisa
         if (foto && !fotoPath) fotoPath = await subirFoto(nome, foto);
-        const fotoAntiga = data.perfis[nome]?.foto;
+        let fotoAntiga; try { fotoAntiga = data.perfis[acharNome(data, o.nome)].foto; } catch {}
         aplicar(data, fotoPath ? { ...resto, foto: fotoPath } : resto);
         try {
           const r = await put("placar.json", b64enc(JSON.stringify(data, null, 2) + "\n"), mensagem(o, nome), sha);
