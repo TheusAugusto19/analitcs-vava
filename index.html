@@ -441,7 +441,7 @@ function render(){
 /* ---------------------------------------------------------- ações */
 function toast(msg, err){
   const t = $("toast"); t.textContent = msg; t.className = "toast show" + (err ? " err" : "");
-  clearTimeout(toast.t); toast.t = setTimeout(() => t.className = "toast", 2600);
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.className = "toast", err ? 8000 : 2600);
 }
 async function acao(o){
   const res = await backend.post(o);
@@ -645,20 +645,23 @@ function githubBackend(token){
   const base = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/`;
   const hdr = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" };
   let data = null, sha = null;
-  const erroHttp = (r, acao) => new Error(
-    r.status === 401 ? "Token inválido ou expirado." :
-    r.status === 403 || r.status === 404 ? "Esse token não tem permissão de escrita no repositório." :
-    `Não consegui ${acao} no GitHub (erro ${r.status}).`);
+  const erroHttp = async (r, acao) => {
+    let det = ""; try { det = (await r.json()).message || ""; } catch {}
+    const msg = r.status === 401 ? "Token inválido ou expirado." :
+      r.status === 403 || r.status === 404 ? `O GitHub recusou: não consegui ${acao}. Confira se o token tem Contents: Read and write no analitcs-vava.` :
+      `Não consegui ${acao} no GitHub.`;
+    return new Error(`${msg} [${r.status}${det ? ": " + det : ""}]`);
+  };
   async function ler(){
     const r = await fetch(`${base}placar.json?ref=${GH.branch}&t=${Date.now()}`, { headers: hdr, cache: "no-store" });
-    if (!r.ok) throw erroHttp(r, "ler o placar");
+    if (!r.ok) throw await erroHttp(r, "ler o placar");
     const j = await r.json(); sha = j.sha; data = normalizar(JSON.parse(b64dec(j.content)));
   }
   async function put(path, content, message, s){
     const r = await fetch(base + path, { method: "PUT", headers: { ...hdr, "Content-Type": "application/json" },
       body: JSON.stringify({ message, content, branch: GH.branch, ...(s ? { sha: s } : {}) }) });
     if (r.status === 409 || r.status === 422) { const e = new Error("conflito"); e.conflito = true; throw e; }
-    if (!r.ok) throw erroHttp(r, "salvar");
+    if (!r.ok) throw await erroHttp(r, "salvar");
     return r.json();
   }
   async function subirFoto(nome, dataUrl){
