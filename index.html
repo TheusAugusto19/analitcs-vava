@@ -457,10 +457,20 @@ function lerFoto(file){
     if (!file) return ok(null);
     const img = new Image(), url = URL.createObjectURL(file);
     img.onload = () => {
+      URL.revokeObjectURL(url);
+      // Skin de Minecraft (64x64 ou 64x32): usa o rosto como foto, em pixel art.
+      if (img.width === 64 && (img.height === 64 || img.height === 32)) {
+        const c = Object.assign(document.createElement("canvas"), { width: 320, height: 320 }), g = c.getContext("2d");
+        g.imageSmoothingEnabled = false;
+        g.drawImage(img, 8, 8, 8, 8, 0, 0, 320, 320);   // rosto
+        g.drawImage(img, 40, 8, 8, 8, 0, 0, 320, 320);  // camada de cima (chapéu/cabelo)
+        return ok(c.toDataURL("image/png"));
+      }
       const M = 400, k = Math.min(1, M / Math.max(img.width, img.height));
       const c = Object.assign(document.createElement("canvas"), { width: Math.round(img.width * k), height: Math.round(img.height * k) });
       c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-      URL.revokeObjectURL(url); ok(c.toDataURL("image/jpeg", .9));
+      // PNG mantém a transparência; o resto vira JPG (arquivo menor).
+      ok(file.type === "image/png" ? c.toDataURL("image/png") : c.toDataURL("image/jpeg", .9));
     };
     img.onerror = () => fail(new Error("Não consegui ler essa imagem."));
     img.src = url;
@@ -668,7 +678,7 @@ function githubBackend(token){
     const m = /^data:image\/[\w.+-]+;base64,(.+)$/.exec(dataUrl || "");
     if (!m) throw new Error("Foto inválida.");
     // Nome novo a cada troca: assim nenhum cache (Pages, navegador, Discord) mostra a foto antiga.
-    const path = `fotos/${slug(nome)}-${Date.now()}.jpg`;
+    const path = `fotos/${slug(nome)}-${Date.now()}.${dataUrl.startsWith("data:image/png") ? "png" : "jpg"}`;
     await put(path, m[1], `Foto de ${nome}`);
     return path;
   }
