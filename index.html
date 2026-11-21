@@ -72,10 +72,20 @@
   .back{color:var(--muted);font-weight:600;margin-bottom:16px}
   .back:hover{color:var(--text)}
   .phead{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
-  .avaedit{position:relative;border-radius:50%;flex:none}
-  .avaedit .cam{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);background:var(--accent);color:var(--on-accent);font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;white-space:nowrap}
-  .avaedit:hover .ava{filter:brightness(.75)}
-  .avaedit:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+  .avawrap{position:relative;flex:none}
+  .avabtn{border-radius:50%;display:block;cursor:zoom-in}
+  .avabtn:hover .ava{filter:brightness(.85)}
+  .avabtn:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+  .avawrap .cam{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);background:var(--accent);color:var(--on-accent);font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;white-space:nowrap}
+  .pdlg{margin:auto;border:1px solid var(--line);border-radius:22px;background:var(--panel);color:var(--text);padding:28px 24px 24px;width:min(480px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;position:relative}
+  .pdlg::backdrop{background:rgba(5,6,10,.75);backdrop-filter:blur(6px)}
+  .pdlg .x{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:10px;color:var(--muted);font-size:16px}
+  .pdlg .x:hover{background:var(--panel2);color:var(--text)}
+  .pdlg-foto{display:flex;justify-content:center}
+  .pdlg-foto .ava{--s:min(260px,60vw) !important;box-shadow:0 0 0 3px var(--accent),0 20px 60px -15px var(--accent)}
+  .pdlg-nome{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:44px;text-align:center;margin-top:14px;line-height:1}
+  .pdlg-form{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+  .pdlg-form h3{font-size:15px}
   .phead .ava{--s:120px;box-shadow:0 0 0 3px var(--accent),0 14px 40px -10px var(--accent)}
   .pname{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:56px;letter-spacing:1px;line-height:1}
   .tags{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
@@ -222,6 +232,7 @@
 </aside>
 
 <div class="toast" id="toast"></div>
+<dialog id="perfilDlg" class="pdlg"></dialog>
 <input type="file" id="fotoRapida" accept="image/*" hidden>
 
 <script>
@@ -351,7 +362,10 @@ function renderPerfil(nome){
   $("main").innerHTML = `
     <button class="back" data-act="home">← Todos os perfis</button>
     <div class="phead">
-      ${eu && !leitura ? `<button class="avaedit" data-act="trocar-foto" title="Trocar foto">${ava(nome)}<span class="cam">📷 Trocar foto</span></button>` : ava(nome)}
+      <div class="avawrap">
+        <button class="avabtn" data-act="expandir" data-nome="${esc(nome)}" title="Ver foto">${ava(nome)}</button>
+        ${eu && !leitura ? '<button class="cam" data-act="trocar-foto">📷 Trocar foto</button>' : ""}
+      </div>
       <div>
         <div class="pname">${esc(nome)}</div>
         <div class="tags">
@@ -360,6 +374,7 @@ function renderPerfil(nome){
           ${jogo === "valorant" ? `<span class="tag">${elo(p.elo, 20)} ${esc(p.elo || "Sem elo")}</span>` : ""}
         </div>
       </div>
+      ${eu && !leitura ? `<button class="favbtn" data-act="editar" data-nome="${esc(nome)}">✎ Editar perfil</button>` : ""}
       ${sessao && !eu && !leitura ? `<button class="favbtn ${fav ? "on" : ""}" data-act="fav" data-nome="${esc(nome)}">${fav ? "★ Favorito" : "☆ Favoritar"}</button>` : ""}
     </div>
 
@@ -370,18 +385,7 @@ function renderPerfil(nome){
         <label class="f">Quantas você perdeu?<input class="inp loss" type="number" id="regP" min="-100" max="100" step="1" placeholder="0"></label>
         <button class="btn">Salvar</button>
         <small>Soma no dia de hoje (${fmtDia(hoje)}). Errou? Digite um número negativo para corrigir.</small>
-      </form>
-      <details class="card edit"><summary>✎ Editar perfil (foto e elo)</summary>
-        <form id="editForm" class="add">
-          <label class="fotopick">${ava(nome, 56)}<span>Trocar foto</span><input type="file" accept="image/*" id="editFoto" hidden></label>
-          <div class="row2">
-            <label class="f">Nome<input class="inp" id="editNome" value="${esc(nome)}" maxlength="24" required></label>
-            <label class="f">Novo PIN<input class="inp" id="editPin" placeholder="••••" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" title="4 números"></label>
-          </div>
-          ${eloPicker("editElo", p.elo)}
-          <button class="btn">Salvar alterações</button>
-        </form>
-      </details>` : (!sessao && !leitura ? `<p class="tag" style="margin-bottom:16px">Este perfil é seu? Responda "Quem é você?" na barra lateral para editar.</p>` : "")}
+      </form>` : (!sessao && !leitura ? `<p class="tag" style="margin-bottom:16px">Este perfil é seu? Responda "Quem é você?" na barra lateral para editar.</p>` : "")}
 
     <div class="kpis">
       <div class="card kpi"><div class="l">Partidas</div><div class="v">${tot.t}</div></div>
@@ -404,6 +408,30 @@ function renderPerfil(nome){
         ${Object.keys(d).sort().reverse().map(k => { const s = soma({ [k]: d[k] }); return `<tr><td>${fmtDia(k)}</td><td class="w">${s.g}</td><td class="lo">${s.p}</td><td>${s.pct}%${pbar(s)}</td></tr>`; }).join("") || '<tr><td colspan="4" class="empty">Sem partidas.</td></tr>'}
       </table></div></div>
     </div>`;
+}
+
+function abrirPerfilDlg(nome, editar){
+  const p = db.perfis[nome]; if (!p) return;
+  const eu = sessao?.nome === nome && !leitura, dlg = $("perfilDlg");
+  dlg.innerHTML = `
+    <button class="x" data-act="fechar" title="Fechar">✕</button>
+    <div class="pdlg-foto">${ava(nome, 260)}</div>
+    <div class="pdlg-nome">${esc(nome)}</div>
+    <div class="tags" style="justify-content:center">${elo(p.elo, 20)} <span class="tag">${esc(p.elo || "Sem elo")}</span></div>
+    ${eu ? `
+      <form id="editForm" class="add pdlg-form">
+        <h3>✎ Editar perfil</h3>
+        <label class="fotopick">${ava(nome, 56)}<span>Trocar foto</span><input type="file" accept="image/*" id="editFoto" hidden></label>
+        <div class="row2">
+          <label class="f">Nome<input class="inp" id="editNome" value="${esc(nome)}" maxlength="24" required></label>
+          <label class="f">Novo PIN<input class="inp" id="editPin" placeholder="••••" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" title="4 números"></label>
+        </div>
+        ${eloPicker("editElo", p.elo)}
+        <button class="btn">Salvar alterações</button>
+      </form>` : ""}`;
+  if (!dlg.open) dlg.showModal();
+  if (editar) dlg.querySelector("#editNome")?.focus();
+  else dlg.querySelector(".x").focus();
 }
 
 function renderSide(){
@@ -501,6 +529,9 @@ document.addEventListener("click", async e => {
     if (act === "home") { view = null; render(); }
     if (act === "sair") { sair(); render(); }
     if (act === "trocar-foto") $("fotoRapida").click();
+    if (act === "expandir") abrirPerfilDlg(b.dataset.nome, false);
+    if (act === "editar") abrirPerfilDlg(b.dataset.nome, true);
+    if (act === "fechar") $("perfilDlg").close();
     if (act === "gh-sair") { store.set("ghToken", null); location.reload(); }
     if (act === "fav") { await acao(comPin({ op: "favorito", alvo: b.dataset.nome })); render(); }
   } catch (err) { toast(err.message, 1); }
@@ -548,7 +579,7 @@ document.addEventListener("submit", async e => {
       const novoNome = $("editNome").value.trim(), novoPin = $("editPin").value.trim();
       const nome = await acao(comPin({ op: "perfil_editar", novoNome, ...(novoPin ? { novoPin } : {}), ...(foto ? { foto } : {}), ...(sel ? { elo: sel.value } : {}) }));
       sessao = { nome, pin: novoPin || sessao.pin }; try { sessionStorage.setItem("sessao", JSON.stringify(sessao)); } catch {}
-      view = nome; render(); toast("Perfil atualizado.");
+      $("perfilDlg").close(); view = nome; render(); toast("Perfil atualizado.");
     }
     if (f.id === "addForm") {
       const foto = await lerFoto($("addFoto").files[0]);
@@ -560,6 +591,7 @@ document.addEventListener("submit", async e => {
   } catch (err) { toast(err.message, 1); }
 });
 
+$("perfilDlg").addEventListener("click", e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
 $("busca").addEventListener("input", e => { busca = e.target.value.trim(); if (view) view = null; renderHome(); });
 
 /* ---------------------------------------------------------- barra lateral arrastável */
@@ -795,7 +827,7 @@ function iniciarAtualizacao(){
   timer = setInterval(async () => {
     const ativo = document.activeElement;
     if (ativo && /INPUT|SELECT|TEXTAREA/.test(ativo.tagName)) return;
-    if (document.querySelector("details[open]")) return;
+    if (document.querySelector("details[open], dialog[open]")) return;
     try { const d = await backend.get(), t = JSON.stringify(d); if (t !== lastText) { lastText = t; db = d; render(); } } catch {}
   }, backend.intervalo);
 }
