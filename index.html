@@ -162,6 +162,12 @@
   .elogrid input{display:none}
   .elogrid .elo{--es:30px;flex-direction:column}
 
+  .ghform{display:grid;grid-template-columns:1fr auto;gap:8px}
+  .ghform .inp{padding:10px 12px} .ghform .btn{padding:10px 14px}
+  .ghhelp{font-size:12px;color:var(--muted);margin-top:8px}
+  .ghok{font-size:13px;color:var(--win);line-height:1.6}
+  .ghok code{color:var(--text)} .ghok button{color:var(--muted);text-decoration:underline;margin-left:4px}
+  .btn:disabled{opacity:.6;cursor:wait}
   .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--panel2);border:1px solid var(--line);padding:12px 18px;border-radius:12px;z-index:50;transition:transform .3s;font-weight:600;font-size:14px}
   .toast.show{transform:translate(-50%,0)}
   .toast.err{border-color:var(--loss);color:var(--loss)}
@@ -191,7 +197,7 @@
   <div class="side-body">
     <section class="quem" id="quem"></section>
     <section class="rank"><h3>Rank · <b id="rankJogo"></b></h3><div id="rank"></div></section>
-    <section>
+    <section id="addSec">
       <h3>Adicionar pessoa</h3>
       <form class="add" id="addForm" autocomplete="off">
         <label class="fotopick"><span class="ava" id="addPrev">+</span>Escolher foto<input type="file" accept="image/*" id="addFoto" hidden></label>
@@ -203,6 +209,7 @@
         <button class="btn">Adicionar</button>
       </form>
     </section>
+    <section class="gh" id="ghBox" hidden></section>
   </div>
 </aside>
 
@@ -250,9 +257,9 @@ function soma(d, filtro = () => true){
 function ava(nome, s){
   const p = db.perfis[nome] || {};
   const h = [...nome].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
-  const ok = /^fotos\/[\w.-]+$/.test(p.foto || "") || /^data:image\//.test(p.foto || "");
+  const ok = /^fotos\/[\w.-]+(\?v=\d+)?$/.test(p.foto || "") || /^data:image\//.test(p.foto || "");
   const ini = nome.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
-  return `<span class="ava" style="--h:${h};${s ? `--s:${s}px` : ""}">${ok ? `<img src="${esc(p.foto)}" alt="">` : esc(ini)}</span>`;
+  return `<span class="ava" style="--h:${h};${s ? `--s:${s}px` : ""}">${ok ? `<img src="${esc(p.foto)}" alt="" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/${GH.owner}/${GH.repo}/${GH.branch}/${esc(p.foto)}'">` : esc(ini)}</span>`;
 }
 function elo(e, size){
   if (!e || !ELOS.includes(e)) return `<span class="elo" style="color:var(--muted)">—</span>`;
@@ -381,6 +388,17 @@ function renderPerfil(nome){
 }
 
 function renderSide(){
+  $("addSec").hidden = leitura;
+  const gh = $("ghBox"); gh.hidden = !(leitura || backend.github);
+  gh.innerHTML = backend.github ? `
+    <h3>Editar online</h3>
+    <p class="ghok">● Conectado ao GitHub. Tudo o que for salvo vai para o <code>placar.json</code>. <button data-act="gh-sair">Desconectar</button></p>` : `
+    <h3>Editar online</h3>
+    <form id="ghForm" class="ghform" autocomplete="off">
+      <input class="inp" id="ghToken" type="password" placeholder="Cole o token do GitHub" required>
+      <button class="btn">Conectar</button>
+    </form>
+    <p class="ghhelp">O token fica salvo só neste navegador.</p>`;
   $("quem").innerHTML = sessao && db.perfis[sessao.nome] ? `
     <h3>Quem é você?</h3>
     <div class="who">${ava(sessao.nome)}<div><b>${esc(sessao.nome)}</b>
@@ -453,6 +471,7 @@ document.addEventListener("click", async e => {
     if (act === "abrir") { view = b.dataset.nome; render(); scrollTo({ top: 0, behavior: "smooth" }); }
     if (act === "home") { view = null; render(); }
     if (act === "sair") { sair(); render(); }
+    if (act === "gh-sair") { store.set("ghToken", null); location.reload(); }
     if (act === "fav") { await acao(comPin({ op: "favorito", alvo: b.dataset.nome })); render(); }
   } catch (err) { toast(err.message, 1); }
 });
@@ -469,6 +488,11 @@ document.addEventListener("submit", async e => {
   e.preventDefault();
   const f = e.target;
   try {
+    if (f.id === "ghForm") {
+      const btn = f.querySelector("button"); btn.disabled = true; btn.textContent = "Conectando...";
+      try { await conectarGitHub($("ghToken").value.trim()); toast("Conectado! Agora dá pra editar."); }
+      finally { btn.disabled = false; btn.textContent = "Conectar"; }
+    }
     if (f.id === "loginForm") {
       const pin = leitura ? "" : $("loginPin").value.trim();
       const nome = await acao({ op: "login", nome: $("loginNome").value, pin });
@@ -522,10 +546,67 @@ $("busca").addEventListener("input", e => { busca = e.target.value.trim(); if (v
   addEventListener("resize", () => { if (solta()) side.removeAttribute("style"); else { const s = store.get("sidePos"); if (s) pos(s.x, s.y); } });
 })();
 
+/* ---------------------------------------------------------- regras (as mesmas do server.py) */
+const vazioPartidas = () => Object.fromEntries(Object.keys(JOGOS).map(j => [j, {}]));
+function normalizar(data){
+  data = data && typeof data === "object" ? data : {};
+  data.perfis ||= {};
+  for (const p of Object.values(data.perfis)) {
+    p.foto ??= ""; p.pin ??= "0000"; p.elo ??= ""; p.favoritos ||= []; p.partidas ||= {};
+    for (const j of Object.keys(JOGOS)) p.partidas[j] ||= {};
+  }
+  return data;
+}
+const publico = data => ({ perfis: Object.fromEntries(Object.entries(data.perfis).map(([n, { pin, ...r }]) => [n, JSON.parse(JSON.stringify(r))])) });
+function acharNome(data, nome){
+  const a = String(nome || "").trim().toLowerCase(), n = Object.keys(data.perfis).find(k => k.toLowerCase() === a);
+  if (!n) throw new Error("Perfil não encontrado.");
+  return n;
+}
+function autenticar(data, o){
+  const n = acharNome(data, o.nome);
+  if (String(o.pin) !== String(data.perfis[n].pin)) throw new Error("PIN errado.");
+  return n;
+}
+const slug = s => s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "perfil";
+
+/* Aplica uma edição no objeto do banco e devolve o nome do perfil. */
+function aplicar(data, o){
+  if (o.op === "login") return autenticar(data, o);
+  if (o.op === "perfil_criar") {
+    const nome = String(o.nome || "").trim();
+    if (!nome || nome.length > 24) throw new Error("Nome precisa ter de 1 a 24 caracteres.");
+    if (Object.keys(data.perfis).some(k => k.toLowerCase() === nome.toLowerCase())) throw new Error("Já existe um perfil com esse nome.");
+    if (!/^\d{4}$/.test(o.pin || "")) throw new Error("PIN precisa ter 4 números.");
+    if (!ELOS.includes(o.elo || "")) throw new Error("Elo inválido.");
+    data.perfis[nome] = { foto: o.foto || "", pin: o.pin, elo: o.elo || "", favoritos: [], partidas: vazioPartidas() };
+    return nome;
+  }
+  const nome = autenticar(data, o), p = data.perfis[nome];
+  if (o.op === "perfil_editar") {
+    if (o.foto) p.foto = o.foto;
+    if ("elo" in o) { if (!ELOS.includes(o.elo || "")) throw new Error("Elo inválido."); p.elo = o.elo || ""; }
+  } else if (o.op === "registrar") {
+    if (!JOGOS[o.jogo]) throw new Error("Jogo inválido.");
+    const g = Math.trunc(+o.ganhou || 0), l = Math.trunc(+o.perdeu || 0);
+    if (Math.abs(g) > 100 || Math.abs(l) > 100) throw new Error("No máximo 100 por vez.");
+    if (!g && !l) throw new Error("Digite quantas ganhou e/ou perdeu.");
+    const k = hojeISO(), d = p.partidas[o.jogo], v = d[k] || { ganhou: 0, perdeu: 0 };
+    const nv = { ganhou: Math.max(0, (+v.ganhou || 0) + g), perdeu: Math.max(0, (+v.perdeu || 0) + l) };
+    if (nv.ganhou || nv.perdeu) d[k] = nv; else delete d[k];
+  } else if (o.op === "favorito") {
+    const a = acharNome(data, o.alvo);
+    if (a === nome) throw new Error("Não dá pra favoritar você mesmo.");
+    const i = p.favoritos.indexOf(a); i < 0 ? p.favoritos.push(a) : p.favoritos.splice(i, 1);
+  } else throw new Error("Operação desconhecida.");
+  return nome;
+}
+
 /* ---------------------------------------------------------- backends */
+/* 1) PC: python server.py */
 function serverBackend(){
   return {
-    salva: true,
+    salva: true, intervalo: 5000,
     async get(){ const r = await fetch("api", { cache: "no-store" }); if (!r.ok) throw new Error((await r.json()).erro); return r.json(); },
     async post(o){
       const r = await fetch("api", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(o) });
@@ -534,25 +615,84 @@ function serverBackend(){
   };
 }
 
-/* GitHub Pages: lê o placar.json e só exibe (não salva). */
-function leituraBackend(data){
-  const pub = { perfis: Object.fromEntries(Object.entries(data.perfis || {}).map(([n, { pin, ...r }]) => [n, r])) };
+/* 2) Online: grava o placar.json direto no repositório do GitHub, com o token salvo no navegador. */
+const GH = (() => {
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/i), repo = m && location.pathname.split("/")[1];
+  return { owner: m ? m[1] : "TheusAugusto19", repo: repo || "analitcs-vava", branch: "main" };
+})();
+const b64enc = str => { const b = new TextEncoder().encode(str); let s = ""; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode(...b.subarray(i, i + 0x8000)); return btoa(s); };
+const b64dec = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\s/g, "")), c => c.charCodeAt(0)));
+
+function githubBackend(token){
+  const base = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/`;
+  const hdr = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" };
+  let data = null, sha = null;
+  const erroHttp = (r, acao) => new Error(
+    r.status === 401 ? "Token inválido ou expirado." :
+    r.status === 403 || r.status === 404 ? "Esse token não tem permissão de escrita no repositório." :
+    `Não consegui ${acao} no GitHub (erro ${r.status}).`);
+  async function ler(){
+    const r = await fetch(`${base}placar.json?ref=${GH.branch}&t=${Date.now()}`, { headers: hdr, cache: "no-store" });
+    if (!r.ok) throw erroHttp(r, "ler o placar");
+    const j = await r.json(); sha = j.sha; data = normalizar(JSON.parse(b64dec(j.content)));
+  }
+  async function put(path, content, message, s){
+    const r = await fetch(base + path, { method: "PUT", headers: { ...hdr, "Content-Type": "application/json" },
+      body: JSON.stringify({ message, content, branch: GH.branch, ...(s ? { sha: s } : {}) }) });
+    if (r.status === 409 || r.status === 422) { const e = new Error("conflito"); e.conflito = true; throw e; }
+    if (!r.ok) throw erroHttp(r, "salvar");
+    return r.json();
+  }
+  async function subirFoto(nome, dataUrl){
+    const m = /^data:image\/[\w.+-]+;base64,(.+)$/.exec(dataUrl || "");
+    if (!m) throw new Error("Foto inválida.");
+    const path = `fotos/${slug(nome)}.jpg`;
+    const atual = await fetch(`${base}${path}?ref=${GH.branch}`, { headers: hdr, cache: "no-store" });
+    await put(path, m[1], `Foto de ${nome}`, atual.ok ? (await atual.json()).sha : undefined);
+    return `${path}?v=${Date.now()}`;
+  }
+  const mensagem = (o, nome) => o.op === "registrar" ? `${nome}: +${o.ganhou || 0} ganhou, +${o.perdeu || 0} perdeu (${JOGOS[o.jogo]})`
+    : o.op === "perfil_criar" ? `Novo perfil: ${nome}` : o.op === "favorito" ? `${nome} favoritou ${o.alvo}` : `${nome} editou o perfil`;
   return {
-    salva: false,
-    async get(){ return pub; },
+    salva: true, github: true, intervalo: 15000,
+    async get(){ await ler(); return publico(data); },
     async post(o){
-      if (o.op !== "login") throw new Error("Site em modo visualização: edite pelo PC com o server.py.");
-      const a = String(o.nome || "").trim().toLowerCase(), n = Object.keys(pub.perfis).find(k => k.toLowerCase() === a);
-      if (!n) throw new Error("Perfil não encontrado.");
-      return { nome: n, ...pub };
+      if (o.op === "login") { await ler(); return { nome: aplicar(data, o), ...publico(data) }; }
+      const { foto, ...resto } = o;
+      let fotoPath = null;
+      for (let t = 0; t < 3; t++) {
+        await ler();
+        const nome = aplicar(structuredClone(data), resto); // valida antes de subir qualquer coisa
+        if (foto && !fotoPath) fotoPath = await subirFoto(nome, foto);
+        aplicar(data, fotoPath ? { ...resto, foto: fotoPath } : resto);
+        try {
+          const r = await put("placar.json", b64enc(JSON.stringify(data, null, 2) + "\n"), mensagem(o, nome), sha);
+          sha = r.content.sha;
+          return { nome, ...publico(data) };
+        } catch (e) { if (!e.conflito) throw e; }
+      }
+      throw new Error("Outra pessoa salvou ao mesmo tempo. Tente de novo.");
     }
   };
 }
 
-/* Preview: sem o server.py rodando, a página funciona com dados de exemplo em memória. */
+/* 3) Sem token: lê o placar.json publicado e só exibe. */
+function leituraBackend(data){
+  const pub = publico(normalizar(data));
+  return {
+    salva: false,
+    async get(){ return pub; },
+    async post(o){
+      if (o.op !== "login") throw new Error("Para editar, conecte o token do GitHub na barra lateral.");
+      return { nome: acharNome(pub, o.nome), ...pub };
+    }
+  };
+}
+
+/* 4) Preview: sem placar.json, funciona com dados de exemplo em memória. */
 function demoBackend(){
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const gerar = (forca) => Object.fromEntries(Object.keys(JOGOS).map(j => {
+  const gerar = forca => Object.fromEntries(Object.keys(JOGOS).map(j => {
     const d = {};
     for (let i = 0; i < 75; i++) {
       if (rnd() < .45) continue;
@@ -570,38 +710,38 @@ function demoBackend(){
     "Exemplo 2": perfil("Prata 1", .6),
     "Exemplo 3": perfil("", .9),
   } };
-  const pub = () => ({ perfis: Object.fromEntries(Object.entries(data.perfis).map(([n, { pin, ...r }]) => [n, JSON.parse(JSON.stringify(r))])) });
-  const achar = nome => { const a = String(nome || "").trim().toLowerCase(); const n = Object.keys(data.perfis).find(k => k.toLowerCase() === a); if (!n) throw new Error("Perfil não encontrado."); return n; };
-  const auth = o => { const n = achar(o.nome); if (String(o.pin) !== data.perfis[n].pin) throw new Error("PIN errado."); return n; };
   return {
     salva: false,
-    async get(){ return pub(); },
-    async post(o){
-      let nome;
-      if (o.op === "login") nome = auth(o);
-      else if (o.op === "perfil_criar") {
-        nome = String(o.nome || "").trim();
-        if (!nome || nome.length > 24) throw new Error("Nome precisa ter de 1 a 24 caracteres.");
-        if (Object.keys(data.perfis).some(k => k.toLowerCase() === nome.toLowerCase())) throw new Error("Já existe um perfil com esse nome.");
-        if (!/^\d{4}$/.test(o.pin || "")) throw new Error("PIN precisa ter 4 números.");
-        data.perfis[nome] = { foto: o.foto || "", pin: o.pin, elo: o.elo || "", favoritos: [], partidas: Object.fromEntries(Object.keys(JOGOS).map(j => [j, {}])) };
-      } else {
-        nome = auth(o); const p = data.perfis[nome];
-        if (o.op === "perfil_editar") { if (o.foto) p.foto = o.foto; if ("elo" in o) p.elo = o.elo || ""; }
-        else if (o.op === "registrar") {
-          const g = +o.ganhou || 0, l = +o.perdeu || 0;
-          if (!g && !l) throw new Error("Digite quantas ganhou e/ou perdeu.");
-          const k = hojeISO(), d = p.partidas[o.jogo], v = d[k] || { ganhou: 0, perdeu: 0 };
-          const nv = { ganhou: Math.max(0, v.ganhou + g), perdeu: Math.max(0, v.perdeu + l) };
-          nv.ganhou || nv.perdeu ? d[k] = nv : delete d[k];
-        } else if (o.op === "favorito") {
-          const a = achar(o.alvo); if (a === nome) throw new Error("Não dá pra favoritar você mesmo.");
-          const i = p.favoritos.indexOf(a); i < 0 ? p.favoritos.push(a) : p.favoritos.splice(i, 1);
-        }
-      }
-      return { nome, ...pub() };
-    }
+    async get(){ return publico(data); },
+    async post(o){ const nome = aplicar(data, o); return { nome, ...publico(data) }; }
   };
+}
+
+/* ---------------------------------------------------------- conexão com o GitHub */
+function banner(html){ const b = $("banner"); b.hidden = !html; b.innerHTML = html || ""; }
+function atualizarBanner(){
+  if (backend.github) banner("");
+  else if (leitura) banner('<b>Modo visualização</b>. Para registrar partidas e adicionar pessoas, conecte o token do GitHub em <b>"Editar online"</b>, na barra lateral.');
+  else if (!backend.salva) banner("<b>Preview</b>: dados de exemplo, nada é salvo. PIN de todos: <b>1234</b>.");
+}
+let timer = null;
+function iniciarAtualizacao(){
+  clearInterval(timer);
+  if (!backend.salva) return;
+  timer = setInterval(async () => {
+    const ativo = document.activeElement;
+    if (ativo && /INPUT|SELECT|TEXTAREA/.test(ativo.tagName)) return;
+    if (document.querySelector("details[open]")) return;
+    try { const d = await backend.get(), t = JSON.stringify(d); if (t !== lastText) { lastText = t; db = d; render(); } } catch {}
+  }, backend.intervalo);
+}
+async function conectarGitHub(token){
+  const g = githubBackend(token);
+  const d = await g.get();
+  store.set("ghToken", token);
+  backend = g; leitura = false; db = d; lastText = JSON.stringify(d);
+  if (sessao && !sessao.pin) sair();
+  atualizarBanner(); render(); iniciarAtualizacao();
 }
 
 async function iniciar(){
@@ -609,33 +749,21 @@ async function iniciar(){
     const r = await fetch("api", { cache: "no-store" });
     if (r.ok && (r.headers.get("content-type") || "").includes("json")) backend = serverBackend();
   } catch {}
+  if (!backend && store.get("ghToken")) {
+    try { const g = githubBackend(store.get("ghToken")); await g.get(); backend = g; }
+    catch (e) { toast(e.message, 1); }
+  }
   if (!backend) {
     try {
       const r = await fetch("placar.json", { cache: "no-store" });
       if (r.ok) { backend = leituraBackend(await r.json()); leitura = true; }
     } catch {}
-    if (leitura) {
-      const b = $("banner"); b.hidden = false;
-      b.innerHTML = "<b>Modo visualização</b>: os dados vêm do <code>placar.json</code>. Para editar, rode <code>python server.py</code> no PC e depois envie o <code>placar.json</code> atualizado para o GitHub.";
-      document.querySelector(".side section:last-child").hidden = true;
-    }
   }
-  if (!backend) {
-    backend = demoBackend();
-    const b = $("banner"); b.hidden = false;
-    b.innerHTML = "<b>Preview</b>: dados de exemplo, nada é salvo. PIN de todos: <b>1234</b>. Para salvar no <code>placar.json</code>, rode <code>python server.py</code> e abra <code>http://localhost:8000</code>.";
-  }
+  if (!backend) backend = demoBackend();
   db = await backend.get(); lastText = JSON.stringify(db);
   $("addElo").innerHTML = eloPicker("addElo");
   previewFoto($("addFoto"), $("addPrev"));
-  render();
-
-  if (backend.salva) setInterval(async () => {
-    const ativo = document.activeElement;
-    if (ativo && /INPUT|SELECT|TEXTAREA/.test(ativo.tagName)) return;
-    if (document.querySelector("details[open]")) return;
-    try { const d = await backend.get(), t = JSON.stringify(d); if (t !== lastText) { lastText = t; db = d; render(); } } catch {}
-  }, 5000);
+  atualizarBanner(); render(); iniciarAtualizacao();
 }
 iniciar();
 </script>
