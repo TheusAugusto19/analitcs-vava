@@ -216,6 +216,10 @@
 <div class="toast" id="toast"></div>
 
 <script>
+/* Application ID do app no Discord Developer Portal (para abrir como Activity). */
+const DISCORD_APP_ID = "";
+const NO_DISCORD = new URLSearchParams(location.search).has("frame_id");
+
 /* =====================================================================
    Banco de dados: placar.json  (lido e gravado pelo server.py)
    perfis -> "Nome" (chave principal) -> foto, pin, elo, favoritos,
@@ -744,7 +748,26 @@ async function conectarGitHub(token){
   atualizarBanner(); render(); iniciarAtualizacao();
 }
 
+/* ---------------------------------------------------------- Discord Activity */
+function carregarScript(src){
+  return new Promise((ok, fail) => document.head.appendChild(Object.assign(document.createElement("script"), { src, onload: ok, onerror: () => fail(new Error("Não consegui carregar " + src)) })));
+}
+async function iniciarDiscord(){
+  await carregarScript("discord-sdk.js");
+  const { DiscordSDK, patchUrlMappings } = window.DiscordEmbed;
+  // Dentro do Discord só passa o que estiver em URL Mappings no Developer Portal.
+  patchUrlMappings([
+    { prefix: "/gh", target: "api.github.com" },
+    { prefix: "/raw", target: "raw.githubusercontent.com" },
+    { prefix: "/elos", target: "media.valorant-api.com" },
+  ], { patchFetch: true, patchXhr: true, patchSrcAttributes: true });
+  const sdk = new DiscordSDK(DISCORD_APP_ID);
+  await sdk.ready();
+  document.body.classList.add("discord");
+}
+
 async function iniciar(){
+  if (NO_DISCORD) { try { await iniciarDiscord(); } catch (e) { console.error(e); } }
   try {
     const r = await fetch("api", { cache: "no-store" });
     if (r.ok && (r.headers.get("content-type") || "").includes("json")) backend = serverBackend();
