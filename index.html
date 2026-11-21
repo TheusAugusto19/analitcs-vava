@@ -4,9 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Analytics de Partidas</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
 <style>
+  /* Fontes dentro do repositório: funcionam no site e no Discord (que bloqueia o Google Fonts). */
+  @font-face{font-family:"Bebas Neue";font-weight:400;font-display:swap;src:url(fonts/bebas-neue-latin-400-normal.woff2) format("woff2")}
+  @font-face{font-family:"Inter";font-weight:400;font-display:swap;src:url(fonts/inter-latin-400-normal.woff2) format("woff2")}
+  @font-face{font-family:"Inter";font-weight:500;font-display:swap;src:url(fonts/inter-latin-500-normal.woff2) format("woff2")}
+  @font-face{font-family:"Inter";font-weight:600;font-display:swap;src:url(fonts/inter-latin-600-normal.woff2) format("woff2")}
+  @font-face{font-family:"Inter";font-weight:800;font-display:swap;src:url(fonts/inter-latin-800-normal.woff2) format("woff2")}
   :root{
     --bg:#0a0c12; --panel:#131722; --panel2:#181d2b; --line:#252c3f; --text:#e9ecf5; --muted:#8a93ab;
     --win:#3ddc97; --loss:#ff5c6c; --gold:#ffd166;
@@ -30,7 +34,7 @@
   /* ---------- topo ---------- */
   .topbar{position:sticky;top:0;z-index:20;display:flex;gap:16px;align-items:center;flex-wrap:wrap;
     padding:14px 24px;background:rgba(10,12,18,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-  .brand{font-family:"Bebas Neue";font-size:28px;letter-spacing:1.5px;white-space:nowrap}
+  .brand{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:28px;letter-spacing:1.5px;white-space:nowrap}
   .brand i{font-style:normal;color:var(--accent)}
   .search{flex:1;min-width:200px;max-width:420px;position:relative}
   .search input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:10px 16px 10px 40px;outline:none}
@@ -73,7 +77,7 @@
   .avaedit:hover .ava{filter:brightness(.75)}
   .avaedit:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
   .phead .ava{--s:120px;box-shadow:0 0 0 3px var(--accent),0 14px 40px -10px var(--accent)}
-  .pname{font-family:"Bebas Neue";font-size:56px;letter-spacing:1px;line-height:1}
+  .pname{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:56px;letter-spacing:1px;line-height:1}
   .tags{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
   .tag{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);display:inline-flex;gap:6px;align-items:center}
   .tag.me{color:var(--accent);border-color:var(--accent)}
@@ -100,7 +104,7 @@
   details.edit[open] summary{margin-bottom:14px}
 
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-  .kpi .v{font-family:"Bebas Neue";font-size:48px;line-height:1;margin-top:6px}
+  .kpi .v{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:48px;line-height:1;margin-top:6px}
   .kpi .l{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600}
   .kpi.w .v{color:var(--win)} .kpi.lo .v{color:var(--loss)} .kpi.p .v{color:var(--accent)}
 
@@ -109,7 +113,7 @@
   .donut{width:104px;height:104px;flex:none;position:relative}
   .donut svg{transform:rotate(-90deg)}
   .donut circle{fill:none;stroke-width:12;transition:stroke-dasharray .6s}
-  .donut .c{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-family:"Bebas Neue";font-size:28px;line-height:1}
+  .donut .c{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:28px;line-height:1}
   .donut .c small{display:block;font-family:Inter;font-size:9px;letter-spacing:1.5px;color:var(--muted)}
   .period h4{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
   .lg{font-size:13px;display:flex;flex-direction:column;gap:4px}
@@ -149,7 +153,7 @@
 
   .rank td,.rank th{padding:7px 4px;font-size:12px}
   .rank tr.r{cursor:pointer} .rank tr.r:hover td{background:var(--panel2)}
-  .rank .pos{font-family:"Bebas Neue";font-size:18px;color:var(--muted);width:22px}
+  .rank .pos{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:18px;color:var(--muted);width:22px}
   .rank tr:nth-child(2) .pos{color:var(--gold)}
   .rank .nm{display:flex;gap:8px;align-items:center;font-weight:700;max-width:110px}
   .rank .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
