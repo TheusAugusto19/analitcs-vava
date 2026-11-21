@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analytics de Partidas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c12; --panel:#131722; --panel2:#181d2b; --line:#252c3f; --text:#e9ecf5; --muted:#8a93ab;
+    --win:#3ddc97; --loss:#ff5c6c; --gold:#ffd166;
+    --accent:#ff4655; --on-accent:#fff;
+  }
+  body[data-jogo="valorant"] {--accent:#ff4655; --on-accent:#fff}
+  body[data-jogo="minecraft"]{--accent:#62c13f; --on-accent:#0a0c12}
+  body[data-jogo="cs"]       {--accent:#f5a524; --on-accent:#0a0c12}
+  body[data-jogo="xadrez"]   {--accent:#e8e8e8; --on-accent:#0a0c12}
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:Inter,system-ui,sans-serif;color:var(--text);min-height:100vh;
+    background:radial-gradient(1000px 520px at 15% -10%, color-mix(in srgb,var(--accent) 16%,transparent), transparent 65%), var(--bg);
+    transition:background .4s;
+  }
+  button,input{font:inherit;color:inherit}
+  button{cursor:pointer;border:none;background:none}
+  img{display:block}
+
+  /* ---------- topo ---------- */
+  .topbar{position:sticky;top:0;z-index:20;display:flex;gap:16px;align-items:center;flex-wrap:wrap;
+    padding:14px 24px;background:rgba(10,12,18,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .brand{font-family:"Bebas Neue";font-size:28px;letter-spacing:1.5px;white-space:nowrap}
+  .brand i{font-style:normal;color:var(--accent)}
+  .search{flex:1;min-width:200px;max-width:420px;position:relative}
+  .search input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:10px 16px 10px 40px;outline:none}
+  .search input:focus{border-color:var(--accent)}
+  .search span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .jogos{display:flex;gap:6px;flex-wrap:wrap}
+  .jogos button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-weight:600;font-size:14px;transition:.2s}
+  .jogos button:hover{color:var(--text)}
+  .jogos button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+
+  .banner{margin:16px 24px 0;padding:10px 16px;border-radius:12px;background:color-mix(in srgb,var(--gold) 14%,transparent);border:1px solid color-mix(in srgb,var(--gold) 40%,transparent);color:var(--gold);font-size:13px}
+  main{padding:24px;margin-right:420px;max-width:1200px}
+
+  h2{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin:8px 0 16px;font-weight:600}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px}
+
+  /* ---------- bolinhas ---------- */
+  .bubbles{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;margin-bottom:30px}
+  .bubble{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 8px;border-radius:18px;position:relative;transition:background .2s, transform .2s}
+  .bubble:hover{background:var(--panel);transform:translateY(-3px)}
+  .bubble:hover .ava{box-shadow:0 0 0 3px var(--accent),0 10px 30px -8px var(--accent)}
+  .bn{font-weight:700;font-size:15px;text-align:center;word-break:break-word}
+  .bs{font-size:12px;color:var(--muted)}
+  .bs b{color:var(--win)} .bs em{font-style:normal;color:var(--loss)}
+  .star{position:absolute;top:10px;right:16px;color:var(--gold);font-size:16px}
+  .empty{color:var(--muted);padding:20px 0}
+
+  .ava{width:var(--s,84px);height:var(--s,84px);border-radius:50%;flex:none;overflow:hidden;display:grid;place-items:center;
+    font-weight:800;font-size:calc(var(--s,84px)*.36);color:#fff;
+    background:linear-gradient(135deg,hsl(var(--h) 70% 55%),hsl(calc(var(--h) + 50) 70% 35%));
+    box-shadow:0 0 0 2px var(--line);transition:box-shadow .25s}
+  .ava img{width:100%;height:100%;object-fit:cover}
+
+  /* ---------- perfil ---------- */
+  .back{color:var(--muted);font-weight:600;margin-bottom:16px}
+  .back:hover{color:var(--text)}
+  .phead{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .phead .ava{--s:120px;box-shadow:0 0 0 3px var(--accent),0 14px 40px -10px var(--accent)}
+  .pname{font-family:"Bebas Neue";font-size:56px;letter-spacing:1px;line-height:1}
+  .tags{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+  .tag{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);display:inline-flex;gap:6px;align-items:center}
+  .tag.me{color:var(--accent);border-color:var(--accent)}
+  .favbtn{margin-left:auto;padding:10px 16px;border-radius:12px;border:1px solid var(--line);font-weight:700}
+  .favbtn.on{color:var(--gold);border-color:var(--gold)}
+
+  .elo{display:inline-flex;align-items:center;gap:6px}
+  .elo img{width:var(--es,22px);height:var(--es,22px);object-fit:contain}
+  .elo .eb{font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px;background:var(--ec,#555);color:#fff}
+
+  .reg{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-bottom:16px}
+  .reg h3,.edit h3{grid-column:1 / -1;font-size:15px}
+  .reg small{grid-column:1 / -1;color:var(--muted);font-size:12px}
+  label.f{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:600}
+  .inp{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none;width:100%}
+  .inp:focus{border-color:var(--accent)}
+  .inp.win{border-color:color-mix(in srgb,var(--win) 50%,var(--line));font-size:22px;font-weight:800;color:var(--win)}
+  .inp.loss{border-color:color-mix(in srgb,var(--loss) 50%,var(--line));font-size:22px;font-weight:800;color:var(--loss)}
+  .btn{background:var(--accent);color:var(--on-accent);font-weight:800;padding:12px 20px;border-radius:12px;transition:filter .2s, transform .1s}
+  .btn:hover{filter:brightness(1.1)} .btn:active{transform:scale(.97)}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  details.edit{margin-bottom:16px}
+  details.edit summary{cursor:pointer;font-weight:700;color:var(--muted)}
+  details.edit[open] summary{margin-bottom:14px}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+  .kpi .v{font-family:"Bebas Neue";font-size:48px;line-height:1;margin-top:6px}
+  .kpi .l{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .kpi.w .v{color:var(--win)} .kpi.lo .v{color:var(--loss)} .kpi.p .v{color:var(--accent)}
+
+  .periods{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+  .period{display:flex;gap:16px;align-items:center}
+  .donut{width:104px;height:104px;flex:none;position:relative}
+  .donut svg{transform:rotate(-90deg)}
+  .donut circle{fill:none;stroke-width:12;transition:stroke-dasharray .6s}
+  .donut .c{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-family:"Bebas Neue";font-size:28px;line-height:1}
+  .donut .c small{display:block;font-family:Inter;font-size:9px;letter-spacing:1.5px;color:var(--muted)}
+  .period h4{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .lg{font-size:13px;display:flex;flex-direction:column;gap:4px}
+  .lg i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px}
+
+  .chart svg{width:100%;display:block}
+  .tables{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+  .scroll{max-height:320px;overflow:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:0 6px 8px;position:sticky;top:0;background:var(--panel)}
+  td{padding:8px 6px;border-top:1px solid var(--line)}
+  th:not(:first-child),td:not(:first-child){text-align:right}
+  td.w{color:var(--win);font-weight:700} td.lo{color:var(--loss);font-weight:700}
+  .pbar{height:4px;border-radius:9px;background:var(--loss);overflow:hidden;margin-top:4px;min-width:50px}
+  .pbar div{height:100%;background:var(--win)}
+
+  /* ---------- barra lateral ---------- */
+  .side{position:fixed;top:84px;right:16px;width:390px;z-index:30;background:rgba(19,23,34,.96);backdrop-filter:blur(10px);
+    border:1px solid var(--line);border-radius:18px;box-shadow:0 20px 60px -20px #000;display:flex;flex-direction:column;max-height:calc(100vh - 100px)}
+  .side-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);cursor:grab;user-select:none;touch-action:none}
+  .side-head:active{cursor:grabbing}
+  .side-head span{font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+  .side-head button{width:28px;height:28px;border-radius:8px;color:var(--muted);font-size:18px;line-height:1}
+  .side-head button:hover{background:var(--panel2);color:var(--text)}
+  .side.min .side-body{display:none}
+  .side-body{overflow:auto;padding:16px;display:flex;flex-direction:column;gap:22px}
+  .side h3{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:600}
+  .side h3 b{color:var(--accent)}
+  .quem form{display:grid;grid-template-columns:1fr 84px auto;gap:8px}
+  .quem .inp{padding:10px 12px}
+  .quem .btn{padding:10px 14px}
+  .who{display:flex;gap:12px;align-items:center}
+  .who .ava{--s:48px}
+  .who div{flex:1} .who b{display:block;font-size:16px}
+  .who .links{display:flex;gap:10px;font-size:13px}
+  .who .links button{color:var(--accent);font-weight:600} .who .links button.out{color:var(--muted)}
+
+  .rank td,.rank th{padding:7px 4px;font-size:12px}
+  .rank tr.r{cursor:pointer} .rank tr.r:hover td{background:var(--panel2)}
+  .rank .pos{font-family:"Bebas Neue";font-size:18px;color:var(--muted);width:22px}
+  .rank tr:nth-child(2) .pos{color:var(--gold)}
+  .rank .nm{display:flex;gap:8px;align-items:center;font-weight:700;max-width:110px}
+  .rank .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rank .ava{--s:24px;font-size:10px}
+
+  .add{display:flex;flex-direction:column;gap:10px}
+  .fotopick{display:flex;gap:12px;align-items:center;cursor:pointer;font-size:13px;color:var(--muted);font-weight:600}
+  .fotopick .ava{--s:56px;--h:220;border:2px dashed var(--line);box-shadow:none;background:var(--bg);color:var(--muted);font-size:22px}
+  .row2{display:grid;grid-template-columns:1fr 100px;gap:8px}
+  .elopick summary{cursor:pointer;font-size:13px;color:var(--muted);font-weight:600;display:flex;gap:8px;align-items:center}
+  .elogrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px}
+  .elogrid label{border:1px solid var(--line);border-radius:10px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;font-size:9px;color:var(--muted);text-align:center}
+  .elogrid label:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--text)}
+  .elogrid input{display:none}
+  .elogrid .elo{--es:30px;flex-direction:column}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--panel2);border:1px solid var(--line);padding:12px 18px;border-radius:12px;z-index:50;transition:transform .3s;font-weight:600;font-size:14px}
+  .toast.show{transform:translate(-50%,0)}
+  .toast.err{border-color:var(--loss);color:var(--loss)}
+
+  @media (min-width:1101px){ .banner{margin-right:436px} }
+  @media (max-width:1100px){ main{margin-right:0} .side{position:static;width:auto;margin:0 16px 24px;max-height:none} .side-head{cursor:default} }
+  @media (max-width:760px){
+    .topbar{padding:12px 16px} main{padding:16px}
+    .kpis{grid-template-columns:repeat(2,1fr)} .periods,.tables{grid-template-columns:1fr}
+    .reg{grid-template-columns:1fr 1fr} .reg .btn{grid-column:1 / -1}
+    .pname{font-size:42px} .favbtn{margin-left:0}
+  }
+</style>
+</head>
+<body data-jogo="valorant">
+
+<header class="topbar">
+  <div class="brand"><i>◆</i> Analytics de Partidas</div>
+  <label class="search"><span>⌕</span><input id="busca" type="search" placeholder="Pesquisar nomes..." autocomplete="off"></label>
+  <nav class="jogos" id="jogos"></nav>
+</header>
+<div class="banner" id="banner" hidden></div>
+<main id="main"></main>
+
+<aside class="side" id="side">
+  <div class="side-head" id="sideHandle"><span>⠿ Painel</span><button id="sideMin" title="Minimizar">–</button></div>
+  <div class="side-body">
+    <section class="quem" id="quem"></section>
+    <section class="rank"><h3>Rank · <b id="rankJogo"></b></h3><div id="rank"></div></section>
+    <section>
+      <h3>Adicionar pessoa</h3>
+      <form class="add" id="addForm" autocomplete="off">
+        <label class="fotopick"><span class="ava" id="addPrev">+</span>Escolher foto<input type="file" accept="image/*" id="addFoto" hidden></label>
+        <div class="row2">
+          <input class="inp" id="addNome" placeholder="Nome" maxlength="24" required>
+          <input class="inp" id="addPin" placeholder="PIN" inputmode="numeric" pattern="\d{4}" maxlength="4" required title="4 números">
+        </div>
+        <div id="addElo"></div>
+        <button class="btn">Adicionar</button>
+      </form>
+    </section>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   Banco de dados: placar.json  (lido e gravado pelo server.py)
+   perfis -> "Nome" (chave principal) -> foto, pin, elo, favoritos,
+             partidas -> jogo -> "AAAA-MM-DD" -> { ganhou, perdeu }
+   ===================================================================== */
+const JOGOS = { valorant:"Valorant", minecraft:"Minecraft", cs:"CS", xadrez:"Xadrez" };
+const ICONE = { valorant:"🎯", minecraft:"⛏️", cs:"💣", xadrez:"♟️" };
+const ELOS = [""].concat(...["Ferro","Bronze","Prata","Ouro","Platina","Diamante","Ascendente","Imortal"].map(n => [1,2,3].map(i => `${n} ${i}`)), ["Radiante"]);
+const ELO_COR = { Ferro:"#5b5b5b", Bronze:"#a0703c", Prata:"#9aa4ab", Ouro:"#d9a531", Platina:"#2c9ca8", Diamante:"#b06fe0", Ascendente:"#2fae6c", Imortal:"#c23a5a", Radiante:"#e9c46a" };
+const ELO_IMG = t => `https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/${t}/largeicon.png`;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = { get(k, d){ try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+let backend, db = { perfis:{} }, lastText = "", leitura = false;
+let jogo = JOGOS[store.get("jogo")] ? store.get("jogo") : "valorant";
+let sessao = (() => { try { return JSON.parse(sessionStorage.getItem("sessao")); } catch { return null; } })();
+let view = null; // nome do perfil aberto (null = página inicial)
+let busca = "";
+
+/* ---------------------------------------------------------- datas */
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const hojeISO = () => iso(new Date());
+const inicioSemana = () => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return iso(d); };
+const MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const fmtDia = k => { const [y,m,d] = k.split("-"); return `${d}/${m}/${y}`; };
+const fmtMes = k => { const [y,m] = k.split("-"); return `${MESES[+m-1]}/${y}`; };
+
+/* ---------------------------------------------------------- cálculos */
+const dias = (nome, j = jogo) => db.perfis[nome]?.partidas?.[j] || {};
+function soma(d, filtro = () => true){
+  let g = 0, p = 0;
+  for (const [k, v] of Object.entries(d)) if (filtro(k)) { g += +v.ganhou || 0; p += +v.perdeu || 0; }
+  return { g, p, t: g + p, pct: g + p ? Math.round(g / (g + p) * 100) : 0 };
+}
+
+/* ---------------------------------------------------------- pedaços visuais */
+function ava(nome, s){
+  const p = db.perfis[nome] || {};
+  const h = [...nome].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
+  const ok = /^fotos\/[\w.-]+$/.test(p.foto || "") || /^data:image\//.test(p.foto || "");
+  const ini = nome.split(/\s+/).map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  return `<span class="ava" style="--h:${h};${s ? `--s:${s}px` : ""}">${ok ? `<img src="${esc(p.foto)}" alt="">` : esc(ini)}</span>`;
+}
+function elo(e, size){
+  if (!e || !ELOS.includes(e)) return `<span class="elo" style="color:var(--muted)">—</span>`;
+  const t = ELOS.indexOf(e) + 2, cor = ELO_COR[e.split(" ")[0]];
+  const sigla = e.split(" ").map((w, i) => i ? w : w.slice(0, 3)).join(" ").toUpperCase();
+  return `<span class="elo" style="${size ? `--es:${size}px;` : ""}--ec:${cor}" title="${esc(e)}"><img src="${ELO_IMG(t)}" alt="${esc(e)}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'eb',textContent:'${sigla}'}))"></span>`;
+}
+function eloPicker(nameAttr, sel = ""){
+  return `<details class="elopick"><summary>Elo no Valorant: <span data-elo-label>${sel ? elo(sel) + " " + esc(sel) : "sem elo"}</span></summary>
+    <div class="elogrid">${ELOS.map(e => `<label title="${esc(e || "Sem elo")}"><input type="radio" name="${nameAttr}" value="${esc(e)}" ${e === sel ? "checked" : ""}>${e ? elo(e, 30) : '<span style="font-size:20px">∅</span>'}<span>${esc(e || "Sem elo")}</span></label>`).join("")}</div></details>`;
+}
+function donut(s){
+  const r = 44, C = 2 * Math.PI * r, lg = s.t ? s.g / s.t * C : 0, lp = s.t ? s.p / s.t * C : 0;
+  return `<div class="donut"><svg width="104" height="104" viewBox="0 0 104 104">
+    <circle cx="52" cy="52" r="${r}" stroke="var(--line)"/>
+    <circle cx="52" cy="52" r="${r}" stroke="var(--win)" stroke-dasharray="${lg} ${C}"/>
+    <circle cx="52" cy="52" r="${r}" stroke="var(--loss)" stroke-dasharray="${lp} ${C}" stroke-dashoffset="${-lg}"/>
+  </svg><div class="c"><div>${s.t ? s.pct + "%" : "—"}<small>VITÓRIA</small></div></div></div>`;
+}
+function grafico30(d){
+  const W = 720, H = 220, P = { l: 28, r: 8, t: 14, b: 26 }, N = 30, mid = (H - P.b + P.t) / 2;
+  const ks = [...Array(N)].map((_, i) => { const x = new Date(); x.setDate(x.getDate() - (N - 1 - i)); return iso(x); });
+  const max = Math.max(1, ...ks.map(k => Math.max(+d[k]?.ganhou || 0, +d[k]?.perdeu || 0)));
+  const bw = (W - P.l - P.r) / N, hh = mid - P.t;
+  let s = `<line x1="${P.l}" x2="${W - P.r}" y1="${mid}" y2="${mid}" stroke="var(--line)"/>
+    <text x="${P.l - 6}" y="${P.t + 8}" fill="var(--muted)" font-size="10" text-anchor="end">${max}</text>
+    <text x="${P.l - 6}" y="${mid * 2 - P.t}" fill="var(--muted)" font-size="10" text-anchor="end">${max}</text>`;
+  ks.forEach((k, i) => {
+    const g = +d[k]?.ganhou || 0, p = +d[k]?.perdeu || 0, x = P.l + i * bw + 2, w = bw - 4;
+    const hg = g / max * hh, hp = p / max * hh;
+    if (g) s += `<rect x="${x}" y="${mid - hg}" width="${w}" height="${hg}" rx="3" fill="var(--win)"><title>${fmtDia(k)}: ganhou ${g}</title></rect>`;
+    if (p) s += `<rect x="${x}" y="${mid}" width="${w}" height="${hp}" rx="3" fill="var(--loss)"><title>${fmtDia(k)}: perdeu ${p}</title></rect>`;
+    if (i % 5 === 4 || i === N - 1) s += `<text x="${x + w / 2}" y="${H - 6}" fill="var(--muted)" font-size="10" text-anchor="middle">${k.slice(8)}/${k.slice(5, 7)}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" font-family="Inter">${s}</svg>`;
+}
+const pbar = s => `<div class="pbar" style="${s.t ? "" : "background:var(--line)"}"><div style="width:${s.pct}%"></div></div>`;
+
+/* ---------------------------------------------------------- telas */
+function renderJogos(){
+  document.body.dataset.jogo = jogo;
+  $("jogos").innerHTML = Object.entries(JOGOS).map(([k, n]) => `<button data-act="jogo" data-j="${k}" class="${k === jogo ? "on" : ""}">${ICONE[k]} ${n}</button>`).join("");
+  $("rankJogo").textContent = JOGOS[jogo];
+}
+
+function renderHome(){
+  const nomes = Object.keys(db.perfis).filter(n => n.toLowerCase().includes(busca.toLowerCase()));
+  const favs = sessao ? (db.perfis[sessao.nome]?.favoritos || []) : [];
+  const bolha = n => { const s = soma(dias(n)); return `
+    <button class="bubble" data-act="abrir" data-nome="${esc(n)}">
+      ${favs.includes(n) ? '<span class="star">★</span>' : ""}
+      ${ava(n)}
+      <span class="bn">${esc(n)}</span>
+      <span class="bs"><b>${s.g}V</b> · <em>${s.p}D</em> · ${s.pct}%</span>
+    </button>`; };
+  const emCima = nomes.filter(n => favs.includes(n)), resto = nomes.filter(n => !favs.includes(n));
+  $("main").innerHTML = `
+    ${emCima.length ? `<h2>★ Favoritos</h2><div class="bubbles">${emCima.map(bolha).join("")}</div>` : ""}
+    <h2>${emCima.length ? "Todos os perfis" : "Perfis"} · ${ICONE[jogo]} ${JOGOS[jogo]}</h2>
+    ${resto.length ? `<div class="bubbles">${resto.map(bolha).join("")}</div>` : `<p class="empty">${busca ? "Nenhum nome encontrado." : emCima.length ? "" : "Nenhum perfil ainda. Adicione na barra lateral."}</p>`}`;
+}
+
+function renderPerfil(nome){
+  const p = db.perfis[nome], d = dias(nome), eu = sessao?.nome === nome;
+  const hoje = hojeISO(), sem = inicioSemana(), mes = hoje.slice(0, 7);
+  const tot = soma(d), sh = soma(d, k => k === hoje), ss = soma(d, k => k >= sem && k <= hoje), sm = soma(d, k => k.startsWith(mes));
+  const fav = sessao && !eu && (db.perfis[sessao.nome]?.favoritos || []).includes(nome);
+  const porMes = {}; for (const [k, v] of Object.entries(d)) { const m = k.slice(0, 7); (porMes[m] ||= {})[k] = v; }
+  const per = (t, s) => `<div class="card period">${donut(s)}<div><h4>${t}</h4><div class="lg">
+      <span><i style="background:var(--win)"></i>Ganhou <b>${s.g}</b> (${s.t ? s.pct : 0}%)</span>
+      <span><i style="background:var(--loss)"></i>Perdeu <b>${s.p}</b> (${s.t ? 100 - s.pct : 0}%)</span>
+      <span style="color:var(--muted)">${s.t} partidas</span></div></div></div>`;
+
+  $("main").innerHTML = `
+    <button class="back" data-act="home">← Todos os perfis</button>
+    <div class="phead">
+      ${ava(nome)}
+      <div>
+        <div class="pname">${esc(nome)}</div>
+        <div class="tags">
+          ${eu ? '<span class="tag me">Você</span>' : ""}
+          <span class="tag">${ICONE[jogo]} ${JOGOS[jogo]}</span>
+          ${jogo === "valorant" ? `<span class="tag">${elo(p.elo, 20)} ${esc(p.elo || "Sem elo")}</span>` : ""}
+        </div>
+      </div>
+      ${sessao && !eu && !leitura ? `<button class="favbtn ${fav ? "on" : ""}" data-act="fav" data-nome="${esc(nome)}">${fav ? "★ Favorito" : "☆ Favoritar"}</button>` : ""}
+    </div>
+
+    ${eu && !leitura ? `
+      <form class="card reg" id="regForm">
+        <h3>Registrar partidas de hoje · ${ICONE[jogo]} ${JOGOS[jogo]}</h3>
+        <label class="f">Quantas você ganhou?<input class="inp win" type="number" id="regG" min="-100" max="100" step="1" placeholder="0"></label>
+        <label class="f">Quantas você perdeu?<input class="inp loss" type="number" id="regP" min="-100" max="100" step="1" placeholder="0"></label>
+        <button class="btn">Salvar</button>
+        <small>Soma no dia de hoje (${fmtDia(hoje)}). Errou? Digite um número negativo para corrigir.</small>
+      </form>
+      <details class="card edit"><summary>✎ Editar perfil (foto e elo)</summary>
+        <form id="editForm" class="add">
+          <label class="fotopick">${ava(nome, 56)}<span>Trocar foto</span><input type="file" accept="image/*" id="editFoto" hidden></label>
+          ${eloPicker("editElo", p.elo)}
+          <button class="btn">Salvar alterações</button>
+        </form>
+      </details>` : (!sessao && !leitura ? `<p class="tag" style="margin-bottom:16px">Este perfil é seu? Responda "Quem é você?" na barra lateral para editar.</p>` : "")}
+
+    <div class="kpis">
+      <div class="card kpi"><div class="l">Partidas</div><div class="v">${tot.t}</div></div>
+      <div class="card kpi w"><div class="l">Ganhou</div><div class="v">${tot.g}</div></div>
+      <div class="card kpi lo"><div class="l">Perdeu</div><div class="v">${tot.p}</div></div>
+      <div class="card kpi p"><div class="l">% Vitória</div><div class="v">${tot.pct}%</div></div>
+    </div>
+
+    <div class="periods">${per("Hoje", sh)}${per("Semana", ss)}${per("Mês", sm)}</div>
+
+    <div class="card chart"><h2 style="margin-top:0">Últimos 30 dias · <span style="color:var(--win)">ganhou ▲</span> <span style="color:var(--loss)">perdeu ▼</span></h2>${grafico30(d)}</div>
+
+    <div class="tables">
+      <div class="card"><h2 style="margin-top:0">Histórico por mês</h2><div class="scroll"><table>
+        <tr><th>Mês</th><th>Ganhou</th><th>Perdeu</th><th>%</th></tr>
+        ${Object.keys(porMes).sort().reverse().map(m => { const s = soma(porMes[m]); return `<tr><td>${fmtMes(m)}</td><td class="w">${s.g}</td><td class="lo">${s.p}</td><td>${s.pct}%${pbar(s)}</td></tr>`; }).join("") || '<tr><td colspan="4" class="empty">Sem partidas.</td></tr>'}
+      </table></div></div>
+      <div class="card"><h2 style="margin-top:0">Histórico por dia</h2><div class="scroll"><table>
+        <tr><th>Dia</th><th>Ganhou</th><th>Perdeu</th><th>%</th></tr>
+        ${Object.keys(d).sort().reverse().map(k => { const s = soma({ [k]: d[k] }); return `<tr><td>${fmtDia(k)}</td><td class="w">${s.g}</td><td class="lo">${s.p}</td><td>${s.pct}%${pbar(s)}</td></tr>`; }).join("") || '<tr><td colspan="4" class="empty">Sem partidas.</td></tr>'}
+      </table></div></div>
+    </div>`;
+}
+
+function renderSide(){
+  $("quem").innerHTML = sessao && db.perfis[sessao.nome] ? `
+    <h3>Quem é você?</h3>
+    <div class="who">${ava(sessao.nome)}<div><b>${esc(sessao.nome)}</b>
+      <div class="links"><button data-act="abrir" data-nome="${esc(sessao.nome)}">Meu perfil</button><button class="out" data-act="sair">Sair</button></div></div></div>` : `
+    <h3>Quem é você?</h3>
+    <form id="loginForm" autocomplete="off">
+      <input class="inp" id="loginNome" placeholder="Digite seu nome" list="nomesList" required>
+      ${leitura ? "" : '<input class="inp" id="loginPin" placeholder="PIN" type="password" inputmode="numeric" maxlength="4" required>'}
+      <button class="btn">Entrar</button>
+    </form>
+    <datalist id="nomesList">${Object.keys(db.perfis).map(n => `<option value="${esc(n)}">`).join("")}</datalist>`;
+
+  const rows = Object.keys(db.perfis).map(n => ({ n, ...soma(dias(n)) })).sort((a, b) => b.g - a.g || b.pct - a.pct || a.n.localeCompare(b.n));
+  const val = jogo === "valorant";
+  $("rank").innerHTML = rows.length ? `<table>
+    <tr><th>#</th><th>Nome</th><th title="Partidas jogadas">J</th><th title="Ganhou">V</th><th title="Perdeu">D</th><th>%</th>${val ? "<th>Elo</th>" : ""}</tr>
+    ${rows.map((r, i) => `<tr class="r" data-act="abrir" data-nome="${esc(r.n)}">
+      <td class="pos">${i + 1}</td><td><span class="nm">${ava(r.n, 24)}<span>${esc(r.n)}</span></span></td>
+      <td>${r.t}</td><td class="w">${r.g}</td><td class="lo">${r.p}</td><td>${r.pct}%</td>${val ? `<td>${elo(db.perfis[r.n].elo, 22)}</td>` : ""}</tr>`).join("")}
+  </table>` : '<p class="empty">Ninguém ainda.</p>';
+}
+
+function render(){
+  renderJogos();
+  if (view && !db.perfis[view]) view = null;
+  if (sessao && !db.perfis[sessao.nome]) sair();
+  view ? renderPerfil(view) : renderHome();
+  renderSide();
+}
+
+/* ---------------------------------------------------------- ações */
+function toast(msg, err){
+  const t = $("toast"); t.textContent = msg; t.className = "toast show" + (err ? " err" : "");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.className = "toast", 2600);
+}
+async function acao(o){
+  const res = await backend.post(o);
+  const { nome, ...dados } = res;
+  lastText = JSON.stringify(dados); db = dados;
+  return nome;
+}
+function sair(){ sessao = null; try { sessionStorage.removeItem("sessao"); } catch {} }
+const comPin = o => ({ ...o, nome: sessao.nome, pin: sessao.pin });
+
+function lerFoto(file){
+  return new Promise((ok, fail) => {
+    if (!file) return ok(null);
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const M = 400, k = Math.min(1, M / Math.max(img.width, img.height));
+      const c = Object.assign(document.createElement("canvas"), { width: Math.round(img.width * k), height: Math.round(img.height * k) });
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); ok(c.toDataURL("image/jpeg", .9));
+    };
+    img.onerror = () => fail(new Error("Não consegui ler essa imagem."));
+    img.src = url;
+  });
+}
+function previewFoto(input, alvo){
+  input.addEventListener("change", async () => {
+    try { const u = await lerFoto(input.files[0]); if (u) alvo.innerHTML = `<img src="${u}" alt="">`; } catch (e) { toast(e.message, 1); }
+  });
+}
+
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const { act } = b.dataset;
+  try {
+    if (act === "jogo") { jogo = b.dataset.j; store.set("jogo", jogo); render(); }
+    if (act === "abrir") { view = b.dataset.nome; render(); scrollTo({ top: 0, behavior: "smooth" }); }
+    if (act === "home") { view = null; render(); }
+    if (act === "sair") { sair(); render(); }
+    if (act === "fav") { await acao(comPin({ op: "favorito", alvo: b.dataset.nome })); render(); }
+  } catch (err) { toast(err.message, 1); }
+});
+
+document.addEventListener("change", e => {
+  if (e.target.matches('.elogrid input')) {
+    const lbl = e.target.closest("details").querySelector("[data-elo-label]");
+    lbl.innerHTML = e.target.value ? elo(e.target.value) + " " + esc(e.target.value) : "sem elo";
+  }
+  if (e.target.id === "editFoto") lerFoto(e.target.files[0]).then(u => { if (u) e.target.closest("label").querySelector(".ava").innerHTML = `<img src="${u}" alt="">`; }).catch(err => toast(err.message, 1));
+});
+
+document.addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target;
+  try {
+    if (f.id === "loginForm") {
+      const pin = leitura ? "" : $("loginPin").value.trim();
+      const nome = await acao({ op: "login", nome: $("loginNome").value, pin });
+      sessao = { nome, pin }; try { sessionStorage.setItem("sessao", JSON.stringify(sessao)); } catch {}
+      view = nome; render(); toast(`Fala, ${nome}!`);
+    }
+    if (f.id === "regForm") {
+      const g = parseInt($("regG").value || 0, 10), p = parseInt($("regP").value || 0, 10);
+      await acao(comPin({ op: "registrar", jogo, ganhou: g, perdeu: p }));
+      render(); toast(`Salvo: +${g} ganhou, +${p} perdeu`);
+    }
+    if (f.id === "editForm") {
+      const foto = await lerFoto($("editFoto").files[0]);
+      const sel = f.querySelector('input[name="editElo"]:checked');
+      await acao(comPin({ op: "perfil_editar", ...(foto ? { foto } : {}), ...(sel ? { elo: sel.value } : {}) }));
+      render(); toast("Perfil atualizado.");
+    }
+    if (f.id === "addForm") {
+      const foto = await lerFoto($("addFoto").files[0]);
+      const sel = f.querySelector('input[name="addElo"]:checked');
+      const nome = await acao({ op: "perfil_criar", nome: $("addNome").value, pin: $("addPin").value, elo: sel ? sel.value : "", ...(foto ? { foto } : {}) });
+      f.reset(); $("addPrev").innerHTML = "+"; $("addElo").innerHTML = eloPicker("addElo");
+      view = nome; render(); toast(`${nome} adicionado!`);
+    }
+  } catch (err) { toast(err.message, 1); }
+});
+
+$("busca").addEventListener("input", e => { busca = e.target.value.trim(); if (view) view = null; renderHome(); });
+
+/* ---------------------------------------------------------- barra lateral arrastável */
+(() => {
+  const side = $("side"), h = $("sideHandle");
+  const solta = () => innerWidth <= 1100;
+  const pos = (x, y) => {
+    x = Math.max(8, Math.min(x, innerWidth - side.offsetWidth - 8));
+    y = Math.max(8, Math.min(y, innerHeight - 48));
+    Object.assign(side.style, { left: x + "px", top: y + "px", right: "auto", maxHeight: `calc(100vh - ${y + 16}px)` });
+  };
+  const salvo = store.get("sidePos"); if (salvo && !solta()) pos(salvo.x, salvo.y);
+  if (store.get("sideMin")) side.classList.add("min");
+  let drag = null;
+  h.addEventListener("pointerdown", e => {
+    if (e.target.closest("button") || solta()) return;
+    const r = side.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+    h.setPointerCapture(e.pointerId);
+  });
+  h.addEventListener("pointermove", e => drag && pos(e.clientX - drag.dx, e.clientY - drag.dy));
+  h.addEventListener("pointerup", () => { if (!drag) return; drag = null; const r = side.getBoundingClientRect(); store.set("sidePos", { x: r.left, y: r.top }); });
+  h.addEventListener("dblclick", () => { store.set("sidePos", null); side.removeAttribute("style"); });
+  $("sideMin").addEventListener("click", () => { side.classList.toggle("min"); store.set("sideMin", side.classList.contains("min")); });
+  addEventListener("resize", () => { if (solta()) side.removeAttribute("style"); else { const s = store.get("sidePos"); if (s) pos(s.x, s.y); } });
+})();
+
+/* ---------------------------------------------------------- backends */
+function serverBackend(){
+  return {
+    salva: true,
+    async get(){ const r = await fetch("api", { cache: "no-store" }); if (!r.ok) throw new Error((await r.json()).erro); return r.json(); },
+    async post(o){
+      const r = await fetch("api", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(o) });
+      const j = await r.json(); if (!r.ok) throw new Error(j.erro || "Erro no servidor."); return j;
+    }
+  };
+}
+
+/* GitHub Pages: lê o placar.json e só exibe (não salva). */
+function leituraBackend(data){
+  const pub = { perfis: Object.fromEntries(Object.entries(data.perfis || {}).map(([n, { pin, ...r }]) => [n, r])) };
+  return {
+    salva: false,
+    async get(){ return pub; },
+    async post(o){
+      if (o.op !== "login") throw new Error("Site em modo visualização: edite pelo PC com o server.py.");
+      const a = String(o.nome || "").trim().toLowerCase(), n = Object.keys(pub.perfis).find(k => k.toLowerCase() === a);
+      if (!n) throw new Error("Perfil não encontrado.");
+      return { nome: n, ...pub };
+    }
+  };
+}
+
+/* Preview: sem o server.py rodando, a página funciona com dados de exemplo em memória. */
+function demoBackend(){
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const gerar = (forca) => Object.fromEntries(Object.keys(JOGOS).map(j => {
+    const d = {};
+    for (let i = 0; i < 75; i++) {
+      if (rnd() < .45) continue;
+      const x = new Date(); x.setDate(x.getDate() - i);
+      const g = Math.round(rnd() * 4 * forca), p = Math.round(rnd() * 3);
+      if (g || p) d[iso(x)] = { ganhou: g, perdeu: p };
+    }
+    return [j, d];
+  }));
+  const perfil = (elo, forca, favoritos = []) => ({ foto: "", pin: "1234", elo, favoritos, partidas: gerar(forca) });
+  const data = { perfis: {
+    "Matheus": perfil("Diamante 2", 1.1, ["Lopes"]),
+    "Lopes": perfil("Ascendente 1", 1.2, ["Matheus"]),
+    "Exemplo 1": perfil("Ouro 3", .8),
+    "Exemplo 2": perfil("Prata 1", .6),
+    "Exemplo 3": perfil("", .9),
+  } };
+  const pub = () => ({ perfis: Object.fromEntries(Object.entries(data.perfis).map(([n, { pin, ...r }]) => [n, JSON.parse(JSON.stringify(r))])) });
+  const achar = nome => { const a = String(nome || "").trim().toLowerCase(); const n = Object.keys(data.perfis).find(k => k.toLowerCase() === a); if (!n) throw new Error("Perfil não encontrado."); return n; };
+  const auth = o => { const n = achar(o.nome); if (String(o.pin) !== data.perfis[n].pin) throw new Error("PIN errado."); return n; };
+  return {
+    salva: false,
+    async get(){ return pub(); },
+    async post(o){
+      let nome;
+      if (o.op === "login") nome = auth(o);
+      else if (o.op === "perfil_criar") {
+        nome = String(o.nome || "").trim();
+        if (!nome || nome.length > 24) throw new Error("Nome precisa ter de 1 a 24 caracteres.");
+        if (Object.keys(data.perfis).some(k => k.toLowerCase() === nome.toLowerCase())) throw new Error("Já existe um perfil com esse nome.");
+        if (!/^\d{4}$/.test(o.pin || "")) throw new Error("PIN precisa ter 4 números.");
+        data.perfis[nome] = { foto: o.foto || "", pin: o.pin, elo: o.elo || "", favoritos: [], partidas: Object.fromEntries(Object.keys(JOGOS).map(j => [j, {}])) };
+      } else {
+        nome = auth(o); const p = data.perfis[nome];
+        if (o.op === "perfil_editar") { if (o.foto) p.foto = o.foto; if ("elo" in o) p.elo = o.elo || ""; }
+        else if (o.op === "registrar") {
+          const g = +o.ganhou || 0, l = +o.perdeu || 0;
+          if (!g && !l) throw new Error("Digite quantas ganhou e/ou perdeu.");
+          const k = hojeISO(), d = p.partidas[o.jogo], v = d[k] || { ganhou: 0, perdeu: 0 };
+          const nv = { ganhou: Math.max(0, v.ganhou + g), perdeu: Math.max(0, v.perdeu + l) };
+          nv.ganhou || nv.perdeu ? d[k] = nv : delete d[k];
+        } else if (o.op === "favorito") {
+          const a = achar(o.alvo); if (a === nome) throw new Error("Não dá pra favoritar você mesmo.");
+          const i = p.favoritos.indexOf(a); i < 0 ? p.favoritos.push(a) : p.favoritos.splice(i, 1);
+        }
+      }
+      return { nome, ...pub() };
+    }
+  };
+}
+
+async function iniciar(){
+  try {
+    const r = await fetch("api", { cache: "no-store" });
+    if (r.ok && (r.headers.get("content-type") || "").includes("json")) backend = serverBackend();
+  } catch {}
+  if (!backend) {
+    try {
+      const r = await fetch("placar.json", { cache: "no-store" });
+      if (r.ok) { backend = leituraBackend(await r.json()); leitura = true; }
+    } catch {}
+    if (leitura) {
+      const b = $("banner"); b.hidden = false;
+      b.innerHTML = "<b>Modo visualização</b>: os dados vêm do <code>placar.json</code>. Para editar, rode <code>python server.py</code> no PC e depois envie o <code>placar.json</code> atualizado para o GitHub.";
+      document.querySelector(".side section:last-child").hidden = true;
+    }
+  }
+  if (!backend) {
+    backend = demoBackend();
+    const b = $("banner"); b.hidden = false;
+    b.innerHTML = "<b>Preview</b>: dados de exemplo, nada é salvo. PIN de todos: <b>1234</b>. Para salvar no <code>placar.json</code>, rode <code>python server.py</code> e abra <code>http://localhost:8000</code>.";
+  }
+  db = await backend.get(); lastText = JSON.stringify(db);
+  $("addElo").innerHTML = eloPicker("addElo");
+  previewFoto($("addFoto"), $("addPrev"));
+  render();
+
+  if (backend.salva) setInterval(async () => {
+    const ativo = document.activeElement;
+    if (ativo && /INPUT|SELECT|TEXTAREA/.test(ativo.tagName)) return;
+    if (document.querySelector("details[open]")) return;
+    try { const d = await backend.get(), t = JSON.stringify(d); if (t !== lastText) { lastText = t; db = d; render(); } } catch {}
+  }, 5000);
+}
+iniciar();
+</script>
+</body>
+</html>

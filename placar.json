@@ -1,0 +1,28 @@
+{
+  "perfis": {
+    "Matheus": {
+      "foto": "",
+      "pin": "0000",
+      "elo": "",
+      "favoritos": [],
+      "partidas": {
+        "valorant": {},
+        "minecraft": {},
+        "cs": {},
+        "xadrez": {}
+      }
+    },
+    "Lopes": {
+      "foto": "",
+      "pin": "0000",
+      "elo": "",
+      "favoritos": [],
+      "partidas": {
+        "valorant": {},
+        "minecraft": {},
+        "cs": {},
+        "xadrez": {}
+      }
+    }
+  }
+}
