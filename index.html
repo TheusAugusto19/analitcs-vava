@@ -68,6 +68,10 @@
   .back{color:var(--muted);font-weight:600;margin-bottom:16px}
   .back:hover{color:var(--text)}
   .phead{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  .avaedit{position:relative;border-radius:50%;flex:none}
+  .avaedit .cam{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);background:var(--accent);color:var(--on-accent);font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;white-space:nowrap}
+  .avaedit:hover .ava{filter:brightness(.75)}
+  .avaedit:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
   .phead .ava{--s:120px;box-shadow:0 0 0 3px var(--accent),0 14px 40px -10px var(--accent)}
   .pname{font-family:"Bebas Neue";font-size:56px;letter-spacing:1px;line-height:1}
   .tags{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
@@ -214,6 +218,7 @@
 </aside>
 
 <div class="toast" id="toast"></div>
+<input type="file" id="fotoRapida" accept="image/*" hidden>
 
 <script>
 /* Application ID do app no Discord Developer Portal (para abrir como Activity). */
@@ -340,7 +345,7 @@ function renderPerfil(nome){
   $("main").innerHTML = `
     <button class="back" data-act="home">← Todos os perfis</button>
     <div class="phead">
-      ${ava(nome)}
+      ${eu && !leitura ? `<button class="avaedit" data-act="trocar-foto" title="Trocar foto">${ava(nome)}<span class="cam">📷 Trocar foto</span></button>` : ava(nome)}
       <div>
         <div class="pname">${esc(nome)}</div>
         <div class="tags">
@@ -406,7 +411,7 @@ function renderSide(){
   $("quem").innerHTML = sessao && db.perfis[sessao.nome] ? `
     <h3>Quem é você?</h3>
     <div class="who">${ava(sessao.nome)}<div><b>${esc(sessao.nome)}</b>
-      <div class="links"><button data-act="abrir" data-nome="${esc(sessao.nome)}">Meu perfil</button><button class="out" data-act="sair">Sair</button></div></div></div>` : `
+      <div class="links"><button data-act="abrir" data-nome="${esc(sessao.nome)}">Meu perfil</button>${leitura ? "" : '<button data-act="trocar-foto">Trocar foto</button>'}<button class="out" data-act="sair">Sair</button></div></div></div>` : `
     <h3>Quem é você?</h3>
     <form id="loginForm" autocomplete="off">
       <input class="inp" id="loginNome" placeholder="Digite seu nome" list="nomesList" required>
@@ -475,6 +480,7 @@ document.addEventListener("click", async e => {
     if (act === "abrir") { view = b.dataset.nome; render(); scrollTo({ top: 0, behavior: "smooth" }); }
     if (act === "home") { view = null; render(); }
     if (act === "sair") { sair(); render(); }
+    if (act === "trocar-foto") $("fotoRapida").click();
     if (act === "gh-sair") { store.set("ghToken", null); location.reload(); }
     if (act === "fav") { await acao(comPin({ op: "favorito", alvo: b.dataset.nome })); render(); }
   } catch (err) { toast(err.message, 1); }
@@ -484,6 +490,14 @@ document.addEventListener("change", e => {
   if (e.target.matches('.elogrid input')) {
     const lbl = e.target.closest("details").querySelector("[data-elo-label]");
     lbl.innerHTML = e.target.value ? elo(e.target.value) + " " + esc(e.target.value) : "sem elo";
+  }
+  if (e.target.id === "fotoRapida") {
+    const input = e.target, file = input.files[0]; input.value = "";
+    if (!file || !sessao) return;
+    toast("Enviando foto...");
+    lerFoto(file).then(foto => acao(comPin({ op: "perfil_editar", foto })))
+      .then(() => { render(); toast("Foto atualizada!"); })
+      .catch(err => toast(err.message, 1));
   }
   if (e.target.id === "editFoto") lerFoto(e.target.files[0]).then(u => { if (u) e.target.closest("label").querySelector(".ava").innerHTML = `<img src="${u}" alt="">`; }).catch(err => toast(err.message, 1));
 });
