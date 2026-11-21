@@ -498,17 +498,18 @@ function lerFoto(file){
       URL.revokeObjectURL(url);
       // Skin de Minecraft (64x64 ou 64x32): usa o rosto como foto, em pixel art.
       if (img.width === 64 && (img.height === 64 || img.height === 32)) {
-        const c = Object.assign(document.createElement("canvas"), { width: 320, height: 320 }), g = c.getContext("2d");
+        const c = Object.assign(document.createElement("canvas"), { width: 160, height: 160 }), g = c.getContext("2d");
         g.imageSmoothingEnabled = false;
-        g.drawImage(img, 8, 8, 8, 8, 0, 0, 320, 320);   // rosto
-        g.drawImage(img, 40, 8, 8, 8, 0, 0, 320, 320);  // camada de cima (chapéu/cabelo)
+        g.drawImage(img, 8, 8, 8, 8, 0, 0, 160, 160);   // rosto
+        g.drawImage(img, 40, 8, 8, 8, 0, 0, 160, 160);  // camada de cima (chapéu/cabelo)
         return ok(c.toDataURL("image/png"));
       }
-      const M = 400, k = Math.min(1, M / Math.max(img.width, img.height));
+      const M = 220, k = Math.min(1, M / Math.max(img.width, img.height));
       const c = Object.assign(document.createElement("canvas"), { width: Math.round(img.width * k), height: Math.round(img.height * k) });
       c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
       // PNG mantém a transparência; o resto vira JPG (arquivo menor).
-      ok(file.type === "image/png" ? c.toDataURL("image/png") : c.toDataURL("image/jpeg", .9));
+      const png = file.type === "image/png" ? c.toDataURL("image/png") : "";
+      ok(png && png.length < 120000 ? png : c.toDataURL("image/jpeg", .85));
     };
     img.onerror = () => fail(new Error("Não consegui ler essa imagem."));
     img.src = url;
@@ -642,6 +643,13 @@ function autenticar(data, o){
 }
 const slug = s => s.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "perfil";
 
+/* A foto fica dentro do placar.json, já reduzida (aparece na hora, sem depender do Pages). */
+function validarFoto(f){
+  if (!f) return;
+  if (!/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(f)) throw new Error("Foto inválida.");
+  if (f.length > 200000) throw new Error("Foto muito grande.");
+}
+
 /* Aplica uma edição no objeto do banco e devolve o nome do perfil. */
 function aplicar(data, o){
   if (o.op === "login") return autenticar(data, o);
@@ -651,12 +659,13 @@ function aplicar(data, o){
     if (Object.keys(data.perfis).some(k => k.toLowerCase() === nome.toLowerCase())) throw new Error("Já existe um perfil com esse nome.");
     if (!/^\d{4}$/.test(o.pin || "")) throw new Error("PIN precisa ter 4 números.");
     if (!ELOS.includes(o.elo || "")) throw new Error("Elo inválido.");
+    validarFoto(o.foto);
     data.perfis[nome] = { foto: o.foto || "", pin: o.pin, elo: o.elo || "", favoritos: [], partidas: vazioPartidas() };
     return nome;
   }
   const nome = autenticar(data, o), p = data.perfis[nome];
   if (o.op === "perfil_editar") {
-    if (o.foto) p.foto = o.foto;
+    if (o.foto) { validarFoto(o.foto); p.foto = o.foto; }
     if ("elo" in o) { if (!ELOS.includes(o.elo || "")) throw new Error("Elo inválido."); p.elo = o.elo || ""; }
     if (o.novoPin) { if (!/^\d{4}$/.test(o.novoPin)) throw new Error("PIN precisa ter 4 números."); p.pin = o.novoPin; }
     const nn = String(o.novoNome ?? nome).trim();
@@ -727,14 +736,6 @@ function githubBackend(token){
     if (!r.ok) throw await erroHttp(r, "salvar");
     return r.json();
   }
-  async function subirFoto(nome, dataUrl){
-    const m = /^data:image\/[\w.+-]+;base64,(.+)$/.exec(dataUrl || "");
-    if (!m) throw new Error("Foto inválida.");
-    // Nome novo a cada troca: assim nenhum cache (Pages, navegador, Discord) mostra a foto antiga.
-    const path = `fotos/${slug(nome)}-${Date.now()}.${dataUrl.startsWith("data:image/png") ? "png" : "jpg"}`;
-    await put(path, m[1], `Foto de ${nome}`);
-    return path;
-  }
   async function apagarFotoAntiga(foto){
     const path = String(foto || "").split("?")[0];
     if (!/^fotos\/[\w.-]+$/.test(path)) return;
@@ -752,18 +753,14 @@ function githubBackend(token){
     async get(){ await ler(); return publico(data); },
     async post(o){
       if (o.op === "login") { await ler(); return { nome: aplicar(data, o), ...publico(data) }; }
-      const { foto, ...resto } = o;
-      let fotoPath = null;
       for (let t = 0; t < 3; t++) {
         await ler();
-        const nome = aplicar(structuredClone(data), resto); // valida antes de subir qualquer coisa
-        if (foto && !fotoPath) fotoPath = await subirFoto(nome, foto);
         let fotoAntiga; try { fotoAntiga = data.perfis[acharNome(data, o.nome)].foto; } catch {}
-        aplicar(data, fotoPath ? { ...resto, foto: fotoPath } : resto);
+        const nome = aplicar(data, o);
         try {
           const r = await put("placar.json", b64enc(JSON.stringify(data, null, 2) + "\n"), mensagem(o, nome), sha);
           sha = r.content.sha;
-          if (fotoPath && fotoAntiga && fotoAntiga !== fotoPath) apagarFotoAntiga(fotoAntiga);
+          if (o.foto && fotoAntiga) apagarFotoAntiga(fotoAntiga); // limpa arquivo antigo da pasta fotos/, se houver
           return { nome, ...publico(data) };
         } catch (e) { if (!e.conflito) throw e; }
       }

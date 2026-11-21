@@ -76,28 +76,13 @@ def slug(nome: str) -> str:
 
 
 def salvar_foto(nome: str, data_url: str) -> str:
-    m = re.match(r"^data:image/[\w.+-]+;base64,(.+)$", data_url or "", re.S)
+    """A foto fica dentro do placar.json (data URL já reduzida pelo site)."""
+    m = re.match(r"^data:image/(png|jpeg|webp|gif);base64,([A-Za-z0-9+/=]+)$", data_url or "")
     if not m:
         raise ValueError("Foto inválida.")
-    raw = base64.b64decode(m.group(1), validate=False)
-    if len(raw) > 5 * 1024 * 1024:
-        raise ValueError("Foto muito grande (máx. 5 MB).")
-    if raw[:8] == b"\x89PNG\r\n\x1a\n":
-        ext = "png"
-    elif raw[:3] == b"\xff\xd8\xff":
-        ext = "jpg"
-    elif raw[:4] == b"RIFF" and raw[8:12] == b"WEBP":
-        ext = "webp"
-    elif raw[:6] in (b"GIF87a", b"GIF89a"):
-        ext = "gif"
-    else:
-        raise ValueError("Use PNG, JPG, WEBP ou GIF.")
-    FOTOS.mkdir(exist_ok=True)
-    base = slug(nome)
-    for old in FOTOS.glob(base + ".*"):
-        old.unlink()
-    (FOTOS / f"{base}.{ext}").write_bytes(raw)
-    return f"fotos/{base}.{ext}"
+    if len(data_url) > 200_000:
+        raise ValueError("Foto muito grande.")
+    return data_url
 
 
 def elo_valido(elo) -> str:
