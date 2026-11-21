@@ -6,7 +6,12 @@
       "elo": "",
       "favoritos": [],
       "partidas": {
-        "valorant": {},
+        "valorant": {
+          "2026-11-21": {
+            "ganhou": 7,
+            "perdeu": 3
+          }
+        },
         "minecraft": {},
         "cs": {},
         "xadrez": {}
