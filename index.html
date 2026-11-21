@@ -650,10 +650,20 @@ function githubBackend(token){
   async function subirFoto(nome, dataUrl){
     const m = /^data:image\/[\w.+-]+;base64,(.+)$/.exec(dataUrl || "");
     if (!m) throw new Error("Foto inválida.");
-    const path = `fotos/${slug(nome)}.jpg`;
-    const atual = await fetch(`${base}${path}?ref=${GH.branch}`, { headers: hdr, cache: "no-store" });
-    await put(path, m[1], `Foto de ${nome}`, atual.ok ? (await atual.json()).sha : undefined);
-    return `${path}?v=${Date.now()}`;
+    // Nome novo a cada troca: assim nenhum cache (Pages, navegador, Discord) mostra a foto antiga.
+    const path = `fotos/${slug(nome)}-${Date.now()}.jpg`;
+    await put(path, m[1], `Foto de ${nome}`);
+    return path;
+  }
+  async function apagarFotoAntiga(foto){
+    const path = String(foto || "").split("?")[0];
+    if (!/^fotos\/[\w.-]+$/.test(path)) return;
+    try {
+      const r = await fetch(`${base}${path}?ref=${GH.branch}`, { headers: hdr, cache: "no-store" });
+      if (!r.ok) return;
+      await fetch(base + path, { method: "DELETE", headers: { ...hdr, "Content-Type": "application/json" },
+        body: JSON.stringify({ message: `Remove foto antiga (${path})`, sha: (await r.json()).sha, branch: GH.branch }) });
+    } catch {}
   }
   const mensagem = (o, nome) => o.op === "registrar" ? `${nome}: +${o.ganhou || 0} ganhou, +${o.perdeu || 0} perdeu (${JOGOS[o.jogo]})`
     : o.op === "perfil_criar" ? `Novo perfil: ${nome}` : o.op === "favorito" ? `${nome} favoritou ${o.alvo}` : `${nome} editou o perfil`;
@@ -668,10 +678,12 @@ function githubBackend(token){
         await ler();
         const nome = aplicar(structuredClone(data), resto); // valida antes de subir qualquer coisa
         if (foto && !fotoPath) fotoPath = await subirFoto(nome, foto);
+        const fotoAntiga = data.perfis[nome]?.foto;
         aplicar(data, fotoPath ? { ...resto, foto: fotoPath } : resto);
         try {
           const r = await put("placar.json", b64enc(JSON.stringify(data, null, 2) + "\n"), mensagem(o, nome), sha);
           sha = r.content.sha;
+          if (fotoPath && fotoAntiga && fotoAntiga !== fotoPath) apagarFotoAntiga(fotoAntiga);
           return { nome, ...publico(data) };
         } catch (e) { if (!e.conflito) throw e; }
       }
