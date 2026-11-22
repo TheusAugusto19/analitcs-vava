@@ -130,6 +130,31 @@ def apply(data: dict, o: dict) -> dict:
         }
         return {"nome": nome}
 
+    if op == "valorant_sync":  # partidas ranqueadas vindas do tracker (sem PIN)
+        nome = achar(data, o.get("nome"))
+        p = perfis[nome]
+        v = p.get("valorant")
+        if not v or not v.get("conta"):
+            raise ValueError("Esse perfil não tem conta do Valorant.")
+        if not v.get("migrado"):
+            p["partidas"]["valorant"] = {}
+            v["migrado"] = True
+        v.setdefault("partidas", {})
+        txt = lambda x, n: str(x if x is not None else "")[:n]
+        num = lambda x: max(0, min(9999, round(float(x or 0))))
+        for m in (o.get("partidas") or [])[:300]:
+            if not isinstance(m, dict) or not isinstance(m.get("id"), str) or not m["id"] or len(m["id"]) > 64 or m["id"] in v["partidas"]:
+                continue
+            if not re.match(r"^\d{4}-\d{2}-\d{2}$", str(m.get("dia"))) or m["dia"] < v.get("desde", "") or m.get("resultado") not in ("V", "D", "E"):
+                continue
+            v["partidas"][m["id"]] = {"dia": m["dia"], "hora": txt(m.get("hora"), 5), "resultado": m["resultado"],
+                                      "placar": txt(m.get("placar"), 7), "mapa": txt(m.get("mapa"), 20), "agente": txt(m.get("agente"), 20),
+                                      "agenteId": txt(m.get("agenteId"), 40), "mapaId": txt(m.get("mapaId"), 40), "k": num(m.get("k")), "d": num(m.get("d")),
+                                      "a": num(m.get("a")), "hs": num(m.get("hs")), "acs": num(m.get("acs"))}
+        if o.get("elo") and o["elo"] in ELOS:  # elo direto do tracker
+            p["elo"] = o["elo"]
+        return {"nome": nome}
+
     nome = autenticar(data, o)
     p = perfis[nome]
 
@@ -138,6 +163,18 @@ def apply(data: dict, o: dict) -> dict:
             p["foto"] = salvar_foto(nome, o["foto"])
         if "elo" in o:
             p["elo"] = elo_valido(o.get("elo"))
+        if "valorant" in o:
+            v = o.get("valorant") or {}
+            if not v.get("conta"):
+                p.pop("valorant", None)
+            else:
+                if not re.match(r"^[^#]{3,16}#[A-Za-z0-9]{2,5}$", str(v["conta"])):
+                    raise ValueError("Use o formato Nome#TAG.")
+                if v.get("regiao") not in ("br", "latam", "na", "eu", "ap", "kr"):
+                    raise ValueError("Região inválida.")
+                antigo = p.get("valorant") or {}
+                p["valorant"] = {**antigo, "conta": str(v["conta"]), "regiao": v["regiao"],
+                                 "desde": antigo.get("desde") or date.today().replace(day=1).isoformat()}
         if o.get("novoPin"):
             if not PIN.match(str(o["novoPin"])):
                 raise ValueError("PIN precisa ter 4 números.")

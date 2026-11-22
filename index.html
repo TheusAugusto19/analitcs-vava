@@ -186,6 +186,76 @@
   .ghok{font-size:13px;color:var(--win);line-height:1.6}
   .ghok code{color:var(--text)} .ghok button{color:var(--muted);text-decoration:underline;margin-left:4px}
   .btn:disabled{opacity:.6;cursor:wait}
+  .abas{display:inline-flex;gap:4px;padding:4px;border-radius:14px;background:var(--panel);border:1px solid var(--line);margin-bottom:16px}
+  .abas button{padding:9px 18px;border-radius:10px;font-weight:700;color:var(--muted)}
+  .abas button.on{background:var(--accent);color:var(--on-accent)}
+  .trk-conta h3{font-size:15px;margin-bottom:12px}
+  .trk-conta-row{display:grid;grid-template-columns:1fr 170px auto;gap:10px}
+  .trk-conta small{display:block;color:var(--muted);font-size:12px;margin-top:8px}
+  .trk-load,.trk-erro{color:var(--muted)} .trk-erro b{color:var(--loss)}
+  .trk-trocar{margin-top:16px} .trk-trocar summary{cursor:pointer;color:var(--muted);font-weight:600;margin-bottom:10px}
+  .trk-head{display:flex;gap:18px;align-items:center;padding:22px;border-radius:18px;border:1px solid var(--line);background:var(--panel) center/cover;margin-bottom:12px}
+  .trk-cardp{width:72px;height:72px;border-radius:14px;object-fit:cover;box-shadow:0 0 0 2px var(--accent)}
+  .trk-riot{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:42px;line-height:1}
+  .trk-riot span{color:var(--muted);font-size:.6em;margin-left:4px}
+  .trk-head button.tag{cursor:pointer} .trk-head button.tag:hover{color:var(--text)}
+  .trk-ranks{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .trk-rank{display:flex;gap:16px;align-items:center}
+  .trk-rank .l{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .trk-rank-n{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:34px;line-height:1.1}
+  .trk-rank small{color:var(--muted);font-size:12px}
+  .trk-rr{height:6px;width:160px;max-width:100%;border-radius:9px;background:var(--line);overflow:hidden;margin:6px 0 4px}
+  .trk-rr div{height:100%;background:var(--accent)}
+  .trk-kpis small{color:var(--muted);font-size:12px}
+  .trk-nota{color:var(--muted);font-size:12px;margin:-6px 0 12px}
+  .scroll-x{overflow-x:auto}
+  .trk-partida{background-size:cover;background-position:center right}
+  .trk-mp img.mp{width:72px;height:30px;border-radius:6px;object-fit:cover}
+  .trk-tag{cursor:pointer;color:var(--text)} .trk-tag:disabled{cursor:default}
+  .trk-tag.novo{color:var(--accent);border-color:var(--accent)}
+  .trk-ag{min-width:560px} .trk-ag td,.trk-ag th{white-space:nowrap}
+  .trk-ag .agn{display:flex;align-items:center;gap:10px}
+  .trk-ag img{width:30px;height:30px;border-radius:8px;background:var(--panel2)}
+  .trk-kpis .v{font-size:40px}
+  .trk-agentes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .trk-agente{display:flex;gap:10px;align-items:center}
+  .trk-agente img{width:44px;height:44px;border-radius:12px;background:var(--panel2)}
+  .trk-agente small,.trk-partida small{display:block;color:var(--muted);font-size:12px}
+  .trk-partidas{display:flex;flex-direction:column;gap:6px}
+  .trk-partida{display:grid;grid-template-columns:76px 40px 1fr auto 110px;gap:12px;align-items:center;padding:8px 12px;border-radius:12px;background:var(--panel2);border-left:3px solid var(--muted)}
+  .trk-partida.V{border-left-color:var(--win)} .trk-partida.D{border-left-color:var(--loss)}
+  .trk-partida .res{font-weight:800;font-size:13px} .trk-partida.V .res{color:var(--win)} .trk-partida.D .res{color:var(--loss)}
+  .trk-partida .ag{width:40px;height:40px;border-radius:10px;background:var(--line);overflow:hidden}
+  .trk-partida img{width:40px;height:40px;display:block}
+  .trk-partida .plac{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:24px}
+  .trk-partida .kda{text-align:right}
+  @media (max-width:760px){
+    .trk-conta-row,.trk-ranks,.trk-agentes{grid-template-columns:1fr}
+    .trk-partida{grid-template-columns:60px 36px 1fr auto} .trk-partida .kda{grid-column:3 / -1;text-align:left}
+  }
+  .syncbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;font-size:14px}
+  .syncbtns{display:flex;gap:8px;flex-wrap:wrap} .syncbar .btn{padding:8px 14px}
+  .dia{scroll-margin-top:90px;margin-bottom:16px;border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+  .dia-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .dia-t{flex:1;text-align:center}
+  .dia-t small{display:block;color:var(--accent);font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:800}
+  .dia-t b{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:36px;line-height:1.1;font-weight:400;text-transform:capitalize}
+  .dia-volta{text-align:center;margin:-6px 0 14px} .dia-volta .tag{cursor:pointer}
+  .nav{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);font-size:20px;color:var(--text);flex:none}
+  .nav:hover:not(:disabled){border-color:var(--accent);color:var(--accent)} .nav:disabled{opacity:.3;cursor:default}
+  .dia-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:14px}
+  .dia-kpis div{background:var(--panel2);border-radius:12px;padding:12px 14px}
+  .dia-kpis span{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .dia-kpis b{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:40px;line-height:1.1;font-weight:400}
+  .dia-kpis .w b{color:var(--win)} .dia-kpis .lo b{color:var(--loss)} .dia-kpis .p b{color:var(--accent)}
+  .chart-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px} .chart-head h2{margin:0}
+  .mesnav{display:flex;align-items:center;gap:10px} .mesnav b{min-width:130px;text-align:center;text-transform:capitalize}
+  .mesnav .nav{width:32px;height:32px;font-size:16px}
+  .gdia{cursor:pointer} .gdia.fut{cursor:default;opacity:.4} .gdia .hit{fill:transparent}
+  .gdia:not(.fut):hover .hit{fill:color-mix(in srgb,var(--text) 7%,transparent)} .gdia.sel .hit{fill:color-mix(in srgb,var(--accent) 22%,transparent)}
+  .chart-hint{color:var(--muted);font-size:12px;margin-top:6px}
+  tr.clic{cursor:pointer} tr.clic:hover td{background:var(--panel2)} tr.sel td{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+  .conta2{grid-template-columns:1fr 150px}
   .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--panel2);border:1px solid var(--line);padding:12px 18px;border-radius:12px;z-index:50;transition:transform .3s;font-weight:600;font-size:14px}
   .toast.show{transform:translate(-50%,0)}
   .toast.err{border-color:var(--loss);color:var(--loss)}
@@ -238,6 +308,9 @@
 <script>
 /* Application ID do app no Discord Developer Portal (para abrir como Activity). */
 const DISCORD_APP_ID = "1573810231127969982";
+/* Chave da HenrikDev API (tracker do Valorant). Vazia = botão Tracker escondido. */
+const HENRIK_KEY = "";
+const TRACKER_ON = !!HENRIK_KEY;
 const NO_DISCORD = new URLSearchParams(location.search).has("frame_id");
 
 /* =====================================================================
@@ -251,7 +324,21 @@ const ELOS = [""].concat(...["Ferro","Bronze","Prata","Ouro","Platina","Diamante
 const ELO_COR = { Ferro:"#5b5b5b", Bronze:"#a0703c", Prata:"#9aa4ab", Ouro:"#d9a531", Platina:"#2c9ca8", Diamante:"#b06fe0", Ascendente:"#2fae6c", Imortal:"#c23a5a", Radiante:"#e9c46a" };
 // Dentro do Discord, sites externos passam pelo proxy (URL Mappings do Developer Portal).
 const EXT = (prefixo, host) => NO_DISCORD ? `/.proxy/${prefixo}` : `https://${host}`;
-const ELO_IMG = t => `${EXT("elos", "media.valorant-api.com")}/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/${t}/largeicon.png`;
+/* Imagens oficiais (elos, agentes, mapas) vindas da valorant-api.com. */
+const ASSETS = { tiers: {}, agentes: {}, mapas: {} };
+const ELO_IMG = t => ASSETS.tiers[t] || `${EXT("elos", "media.valorant-api.com")}/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/${t}/largeicon.png`;
+const agenteIcone = (id, nome) => ASSETS.agentes[id] || ASSETS.agentes[String(nome || "").toLowerCase()] || (id ? `${EXT("elos", "media.valorant-api.com")}/agents/${encodeURIComponent(id)}/displayicon.png` : "");
+const mapaImg = (nome, id) => (ASSETS.mapas[id] || ASSETS.mapas[String(nome || "").toLowerCase()] || {}).lista || (id ? `${EXT("elos", "media.valorant-api.com")}/maps/${encodeURIComponent(id)}/listviewicon.png` : "");
+async function carregarAssets(){
+  const api = path => fetch(`${EXT("vapi", "valorant-api.com")}/v1/${path}`).then(r => r.ok ? r.json() : null).catch(() => null);
+  const midia = u => typeof u === "string" ? u.replace(/^https:\/\/media\.valorant-api\.com/, EXT("elos", "media.valorant-api.com")) : "";
+  const [t, a, m] = await Promise.all([api("competitivetiers"), api("agents?isPlayableCharacter=true"), api("maps")]);
+  const ult = t?.data?.[t.data.length - 1];
+  for (const x of ult?.tiers || []) if (x.largeIcon) ASSETS.tiers[x.tier] = midia(x.largeIcon);
+  for (const x of a?.data || []) { const i = midia(x.displayIcon); ASSETS.agentes[x.uuid] = i; ASSETS.agentes[String(x.displayName).toLowerCase()] = i; }
+  for (const x of m?.data || []) { const v = { lista: midia(x.listViewIcon), splash: midia(x.splash) }; ASSETS.mapas[x.uuid] = v; ASSETS.mapas[String(x.displayName).toLowerCase()] = v; }
+  if (t || a || m) render();
+}
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -262,21 +349,44 @@ let jogo = JOGOS[store.get("jogo")] ? store.get("jogo") : "valorant";
 let sessao = (() => { try { return JSON.parse(sessionStorage.getItem("sessao")); } catch { return null; } })();
 let view = null; // nome do perfil aberto (null = página inicial)
 let busca = "";
+let aba = "contador"; // aba do perfil: contador | tracker
 
 /* ---------------------------------------------------------- datas */
 const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const hojeISO = () => iso(new Date());
-const inicioSemana = () => { const d = new Date(); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return iso(d); };
+const deISO = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
+const inicioSemana = (base = hojeISO()) => { const d = deISO(base); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return iso(d); };
+const fimSemana = (base = hojeISO()) => { const d = deISO(inicioSemana(base)); d.setDate(d.getDate() + 6); return iso(d); };
+const somarDias = (k, n) => { const d = deISO(k); d.setDate(d.getDate() + n); return iso(d); };
+const somarMeses = (m, n) => { const [y, mm] = m.split("-").map(Number); return iso(new Date(y, mm - 1 + n, 1)).slice(0, 7); };
 const MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const MESES_LONGO = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const DIAS_SEM = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
 const fmtDia = k => { const [y,m,d] = k.split("-"); return `${d}/${m}/${y}`; };
 const fmtMes = k => { const [y,m] = k.split("-"); return `${MESES[+m-1]}/${y}`; };
+const fmtMesLongo = k => { const [y,m] = k.split("-"); return `${MESES_LONGO[+m-1]} ${y}`; };
+const fmtDiaLongo = k => { const d = deISO(k); return `${DIAS_SEM[d.getDay()]}, ${d.getDate()} de ${MESES_LONGO[d.getMonth()]}`; };
 
 /* ---------------------------------------------------------- cálculos */
-const dias = (nome, j = jogo) => db.perfis[nome]?.partidas?.[j] || {};
+/* Valorant com conta vinculada: o contador vem só das ranqueadas puxadas do tracker. */
+const contaVal = p => TRACKER_ON && p?.valorant?.conta;
+const dias = (nome, j = jogo) => {
+  const p = db.perfis[nome];
+  if (j === "valorant" && contaVal(p)) {
+    const d = {};
+    for (const m of Object.values(p.valorant.partidas || {})) {
+      const x = d[m.dia] ||= { ganhou: 0, perdeu: 0, empate: 0 };
+      m.resultado === "V" ? x.ganhou++ : m.resultado === "D" ? x.perdeu++ : x.empate++;
+    }
+    return d;
+  }
+  return p?.partidas?.[j] || {};
+};
 function soma(d, filtro = () => true){
-  let g = 0, p = 0;
-  for (const [k, v] of Object.entries(d)) if (filtro(k)) { g += +v.ganhou || 0; p += +v.perdeu || 0; }
-  return { g, p, t: g + p, pct: g + p ? Math.round(g / (g + p) * 100) : 0 };
+  let g = 0, p = 0, e = 0;
+  for (const [k, v] of Object.entries(d)) if (filtro(k)) { g += +v.ganhou || 0; p += +v.perdeu || 0; e += +v.empate || 0; }
+  const t = g + p + e;
+  return { g, p, e, t, pct: t ? Math.round(g / t * 100) : 0 };
 }
 
 /* ---------------------------------------------------------- pedaços visuais */
@@ -371,6 +481,9 @@ function renderPerfil(nome){
         <div class="tags">
           ${eu ? '<span class="tag me">Você</span>' : ""}
           <span class="tag">${ICONE[jogo]} ${JOGOS[jogo]}</span>
+          ${TRACKER_ON ? (p.valorant?.conta
+            ? `<button class="tag trk-tag" ${eu && !leitura ? `data-act="editar-conta" data-nome="${esc(nome)}" title="Trocar a conta do tracker"` : "disabled"}>🎯 ${esc(p.valorant.conta)}${eu && !leitura ? " ✎" : ""}</button>`
+            : eu && !leitura ? `<button class="tag trk-tag novo" data-act="editar-conta" data-nome="${esc(nome)}">🎯 Registrar conta do tracker</button>` : "") : ""}
           ${jogo === "valorant" ? `<span class="tag">${elo(p.elo, 20)} ${esc(p.elo || "Sem elo")}</span>` : ""}
         </div>
       </div>
@@ -378,36 +491,348 @@ function renderPerfil(nome){
       ${sessao && !eu && !leitura ? `<button class="favbtn ${fav ? "on" : ""}" data-act="fav" data-nome="${esc(nome)}">${fav ? "★ Favorito" : "☆ Favoritar"}</button>` : ""}
     </div>
 
-    ${eu && !leitura ? `
-      <form class="card reg" id="regForm">
-        <h3>Registrar partidas de hoje · ${ICONE[jogo]} ${JOGOS[jogo]}</h3>
-        <label class="f">Quantas você ganhou?<input class="inp win" type="number" id="regG" min="-100" max="100" step="1" placeholder="0"></label>
-        <label class="f">Quantas você perdeu?<input class="inp loss" type="number" id="regP" min="-100" max="100" step="1" placeholder="0"></label>
-        <button class="btn">Salvar</button>
-        <small>Soma no dia de hoje (${fmtDia(hoje)}). Errou? Digite um número negativo para corrigir.</small>
-      </form>` : (!sessao && !leitura ? `<p class="tag" style="margin-bottom:16px">Este perfil é seu? Responda "Quem é você?" na barra lateral para editar.</p>` : "")}
+    ${TRACKER_ON ? `<div class="abas">
+      <button data-act="aba" data-aba="contador" class="${aba !== "tracker" ? "on" : ""}">📊 Contador</button>
+      <button data-act="aba" data-aba="tracker" class="${aba === "tracker" ? "on" : ""}">🎯 Tracker</button>
+    </div>` : ""}
 
+    ${TRACKER_ON && aba === "tracker" ? renderTracker(nome, eu) : renderContador(nome, eu)}`;
+}
+
+/* ---------------------------------------------------------- Tracker do Valorant (HenrikDev API) */
+const henrikUrl = path => `${EXT("henrik", "api.henrikdev.xyz")}/valorant/${path}`;
+const mediaUrl = u => typeof u === "string" ? u.replace(/^https:\/\/media\.valorant-api\.com/, EXT("elos", "media.valorant-api.com")) : "";
+const tierParaElo = t => t >= 3 && t <= 27 ? ELOS[t - 2] : "";
+const CONTA_RE = /^[^#]{3,16}#[A-Za-z0-9]{2,5}$/;
+const REGIOES = { br: "Brasil", latam: "LATAM", na: "América do Norte", eu: "Europa", ap: "Ásia/Pacífico", kr: "Coreia" };
+const trackerCache = {}; // "conta|regiao" -> { status, dados, erro, t }
+
+async function henrik(path){
+  const r = await fetch(henrikUrl(path), { headers: { Authorization: HENRIK_KEY } });
+  if (r.ok) return (await r.json()).data;
+  throw new Error(
+    r.status === 404 ? "Conta não encontrada. Confira o Nome#TAG e a região." :
+    r.status === 401 || r.status === 403 ? "A chave da API do Valorant é inválida." :
+    r.status === 429 ? "Muitas consultas seguidas. Tente de novo em 1 minuto." :
+    `A API do Valorant não respondeu (erro ${r.status}).`);
+}
+
+function resumirPartidas(partidas, puuid, nome, tag){
+  const lista = [];
+  for (const m of partidas || []) {
+    const eu = (m.players?.all_players || []).find(x => x.puuid === puuid || (`${x.name}#${x.tag}`.toLowerCase() === `${nome}#${tag}`.toLowerCase()));
+    if (!eu) continue;
+    const time = String(eu.team || "").toLowerCase(), t = m.teams?.[time] || {};
+    const empate = !m.teams?.red?.has_won && !m.teams?.blue?.has_won;
+    const s = eu.stats || {}, tiros = (s.headshots || 0) + (s.bodyshots || 0) + (s.legshots || 0);
+    const rounds = m.metadata?.rounds_played || ((t.rounds_won || 0) + (t.rounds_lost || 0)) || 1;
+    lista.push({
+      resultado: empate ? "E" : t.has_won ? "V" : "D",
+      placar: `${t.rounds_won ?? "?"}-${t.rounds_lost ?? "?"}`,
+      mapa: m.metadata?.map || "?", agente: eu.character || "?", icone: mediaUrl(eu.assets?.agent?.small),
+      k: s.kills || 0, d: s.deaths || 0, a: s.assists || 0, hs: tiros ? Math.round(s.headshots / tiros * 100) : 0,
+      acs: Math.round((s.score || 0) / rounds), quando: (m.metadata?.game_start || 0) * 1000,
+      _hs: s.headshots || 0, _tiros: tiros, _score: s.score || 0, _rounds: rounds,
+    });
+  }
+  const n = lista.length, soma = k => lista.reduce((a, x) => a + x[k], 0);
+  const v = lista.filter(x => x.resultado === "V").length;
+  const agentes = {};
+  for (const x of lista) { const a = (agentes[x.agente] ||= { nome: x.agente, icone: x.icone, jogos: 0, v: 0 }); a.jogos++; if (x.resultado === "V") a.v++; }
+  return {
+    lista, n, v, d: lista.filter(x => x.resultado === "D").length,
+    wr: n ? Math.round(v / n * 100) : 0,
+    kd: soma("d") ? (soma("k") / soma("d")).toFixed(2) : soma("k").toFixed(2),
+    kda: soma("d") ? ((soma("k") + soma("a")) / soma("d")).toFixed(2) : "—",
+    hs: soma("_tiros") ? Math.round(soma("_hs") / soma("_tiros") * 100) : 0,
+    acs: soma("_rounds") ? Math.round(soma("_score") / soma("_rounds")) : 0,
+    agentes: Object.values(agentes).sort((a, b) => b.jogos - a.jogos).slice(0, 3),
+  };
+}
+
+async function carregarTracker(nomePerfil, forcar){
+  const p = db.perfis[nomePerfil], cfg = p?.valorant;
+  if (!cfg?.conta) return;
+  const chave = `${cfg.conta}|${cfg.regiao}`, c = trackerCache[chave];
+  if (!forcar && c && (c.status === "carregando" || Date.now() - c.t < 120000)) return;
+  trackerCache[chave] = { status: "carregando", t: Date.now() };
+  const [nome, tag] = cfg.conta.split("#"), q = `${encodeURIComponent(nome)}/${encodeURIComponent(tag)}`, reg = cfg.regiao || "br";
+  try {
+    const conta = await henrik(`v1/account/${q}`);
+    const [mmr, partidas] = await Promise.all([
+      henrik(`v2/mmr/${reg}/${q}`).catch(() => null),
+      henrik(`v3/matches/${reg}/${q}?mode=competitive&size=10`).catch(() => []),
+    ]);
+    const cur = mmr?.current_data || {}, peak = mmr?.highest_rank || {};
+    trackerCache[chave] = { status: "ok", t: Date.now(), dados: {
+      nome: conta.name || nome, tag: conta.tag || tag, nivel: conta.account_level, card: mediaUrl(conta.card?.wide), cardP: mediaUrl(conta.card?.small),
+      tier: cur.currenttier || 0, rr: cur.ranking_in_tier ?? null, ultimo: cur.mmr_change_to_last_game ?? null,
+      pico: peak.tier || 0, picoTemp: peak.season || "",
+      ...resumirPartidas(partidas, conta.puuid, conta.name || nome, conta.tag || tag),
+    } };
+    sincronizarElo(nomePerfil, cur.currenttier);
+  } catch (e) {
+    trackerCache[chave] = { status: "erro", erro: e.message, t: Date.now() };
+  }
+  if (view === nomePerfil && aba === "tracker") render();
+}
+
+/* O elo do perfil acompanha o rank da conta (só quem está logado no próprio perfil grava). */
+/* O elo do perfil vem direto do tracker (qualquer um conectado grava; não precisa de PIN). */
+async function sincronizarElo(nomePerfil, tier){
+  const novo = tierParaElo(tier);
+  if (!novo || !backend?.salva || !db.perfis[nomePerfil]?.valorant?.conta || db.perfis[nomePerfil].elo === novo) return;
+  try { await acao({ op: "valorant_sync", nome: nomePerfil, partidas: [], elo: novo }); render(); toast(`${nomePerfil}: elo atualizado para ${novo}.`); } catch {}
+}
+async function eloDoTracker(cfg){
+  const [n, t] = cfg.conta.split("#");
+  const mmr = await henrik(`v2/mmr/${cfg.regiao || "br"}/${encodeURIComponent(n)}/${encodeURIComponent(t)}`).catch(() => null);
+  return tierParaElo(mmr?.current_data?.currenttier || 0);
+}
+
+function formContaValorant(cfg){
+  return `<form id="contaForm" class="card trk-conta">
+    <h3>Qual é a sua conta do Valorant?</h3>
+    <div class="trk-conta-row">
+      <input class="inp" id="contaRiot" placeholder="Nome#TAG" value="${esc(cfg?.conta || "")}" maxlength="22" required>
+      <select class="inp" id="contaRegiao">${Object.entries(REGIOES).map(([k, n]) => `<option value="${k}" ${k === (cfg?.regiao || "br") ? "selected" : ""}>${n}</option>`).join("")}</select>
+      <button class="btn">Salvar</button>
+    </div>
+    <small>Fica salvo no seu perfil. O tracker passa a carregar sozinho.</small>
+  </form>`;
+}
+
+function statsPartidas(lista){
+  const n = lista.length, s = k => lista.reduce((a, m) => a + (+m[k] || 0), 0), med = k => n ? (s(k) / n).toFixed(1) : "0";
+  const v = lista.filter(m => m.resultado === "V").length, dd = lista.filter(m => m.resultado === "D").length;
+  return { n, v, dd, wr: n ? Math.round(v / n * 100) : 0, k: s("k"), d: s("d"), a: s("a"), km: med("k"), dm: med("d"), am: med("a"),
+    kd: s("d") ? (s("k") / s("d")).toFixed(2) : s("k").toFixed(2), kda: s("d") ? ((s("k") + s("a")) / s("d")).toFixed(2) : "—",
+    hs: n ? Math.round(s("hs") / n) : 0, acs: n ? Math.round(s("acs") / n) : 0 };
+}
+
+function renderTracker(nome, eu){
+  const p = db.perfis[nome], cfg = p.valorant;
+  if (!cfg?.conta) return eu && !leitura ? formContaValorant() : `<p class="empty">${esc(nome)} ainda não vinculou a conta do Valorant.</p>`;
+  const c = trackerCache[`${cfg.conta}|${cfg.regiao}`];
+  if (!c || c.status === "carregando") { carregarTracker(nome); return `<div class="card trk-load">Carregando o tracker de <b>${esc(cfg.conta)}</b>...</div>`; }
+  const trocar = eu && !leitura ? `<details class="trk-trocar"><summary>Trocar conta</summary>${formContaValorant(cfg)}</details>` : "";
+  if (c.status === "erro") return `<div class="card trk-erro"><b>Não consegui carregar ${esc(cfg.conta)}.</b><br>${esc(c.erro)}
+    <div style="margin-top:12px"><button class="btn ghost" data-act="trk-recarregar" data-nome="${esc(nome)}">Tentar de novo</button></div></div>${trocar}`;
+  const t = c.dados, eloAtual = tierParaElo(t.tier), eloPico = tierParaElo(t.pico);
+  const quando = ms => ms ? new Date(ms).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "";
+  // Base das estatísticas: as ranqueadas do mês salvas no JSON (mais completas); sem elas, as últimas da API.
+  const doMes = Object.values(p.valorant.partidas || {}).map(m => ({ ...m, icone: agenteIcone(m.agenteId, m.agente) }));
+  const usaMes = doMes.length >= t.lista.length && doMes.length > 0, base = usaMes ? doMes : t.lista;
+  const fonte = usaMes ? `${doMes.length} ranqueadas desde ${fmtDia(p.valorant.desde || inicioMes())}` : `últimas ${t.lista.length} ranqueadas`;
+  const g = statsPartidas(base);
+  const porAgente = Object.values(base.reduce((acc, m) => { (acc[m.agente || "?"] ||= { nome: m.agente || "?", icone: m.icone, lista: [] }).lista.push(m); return acc; }, {}))
+    .map(a => ({ ...a, s: statsPartidas(a.lista) })).sort((x, y) => y.s.n - x.s.n || y.s.wr - x.s.wr);
+  const porMapa = Object.values(base.reduce((acc, m) => { (acc[m.mapa || "?"] ||= { nome: m.mapa || "?", img: mapaImg(m.mapa, m.mapaId), lista: [] }).lista.push(m); return acc; }, {}))
+    .map(a => ({ ...a, s: statsPartidas(a.lista) })).sort((x, y) => y.s.n - x.s.n || y.s.wr - x.s.wr);
+  return `
+    <div class="trk-head" style="${t.card ? `background-image:linear-gradient(90deg,rgba(10,12,18,.92) 30%,rgba(10,12,18,.35)),url('${esc(t.card)}')` : ""}">
+      ${t.cardP ? `<img class="trk-cardp" src="${esc(t.cardP)}" alt="">` : ""}
+      <div><div class="trk-riot">${esc(t.nome)}<span>#${esc(t.tag)}</span></div>
+        <div class="tags"><span class="tag">Nível ${t.nivel ?? "?"}</span><span class="tag">${esc(REGIOES[cfg.regiao] || cfg.regiao)}</span>
+        <button class="tag" data-act="trk-recarregar" data-nome="${esc(nome)}">↻ Atualizar</button></div></div>
+    </div>
+
+    <div class="trk-ranks">
+      <div class="card trk-rank">${elo(eloAtual, 72)}<div><div class="l">Rank atual</div><div class="trk-rank-n">${esc(eloAtual || "Sem rank")}</div>
+        ${t.rr !== null ? `<div class="trk-rr"><div style="width:${Math.max(0, Math.min(100, t.rr))}%"></div></div><small>${t.rr} RR${t.ultimo !== null ? ` · última: <b style="color:var(${t.ultimo >= 0 ? "--win" : "--loss"})">${t.ultimo >= 0 ? "+" : ""}${t.ultimo}</b>` : ""}</small>` : ""}</div></div>
+      <div class="card trk-rank">${elo(eloPico, 72)}<div><div class="l">Pico</div><div class="trk-rank-n">${esc(eloPico || "—")}</div><small>${esc(t.picoTemp)}</small></div></div>
+    </div>
+
+    <div class="kpis trk-kpis">
+      <div class="card kpi p"><div class="l">% Vitória</div><div class="v">${g.wr}%</div><small>${g.v}V · ${g.dd}D em ${g.n}</small></div>
+      <div class="card kpi"><div class="l">K / D / A médio</div><div class="v">${g.km}/${g.dm}/${g.am}</div><small>Total ${g.k}/${g.d}/${g.a}</small></div>
+      <div class="card kpi"><div class="l">K/D</div><div class="v">${g.kd}</div><small>KDA ${g.kda}</small></div>
+      <div class="card kpi w"><div class="l">Headshot</div><div class="v">${g.hs}%</div><small>ACS médio ${g.acs}</small></div>
+    </div>
+    <p class="trk-nota">Estatísticas de ${esc(fonte)}.</p>
+
+    ${porAgente.length ? `<div class="card"><h2 style="margin-top:0">Por agente</h2><div class="scroll-x"><table class="trk-ag">
+      <tr><th>Agente</th><th>Partidas</th><th>% Vitória</th><th>K / D / A médio</th><th>K/D</th><th>KDA</th><th>HS</th><th>ACS</th></tr>
+      ${porAgente.map(a => `<tr>
+        <td><span class="agn">${a.icone ? `<img src="${esc(a.icone)}" alt="" onerror="this.remove()">` : ""}<b>${esc(a.nome)}</b></span></td>
+        <td>${a.s.n}</td><td>${a.s.wr}%</td><td>${a.s.km} / ${a.s.dm} / ${a.s.am}</td>
+        <td class="${+a.s.kd >= 1 ? "w" : "lo"}">${a.s.kd}</td><td>${a.s.kda}</td><td>${a.s.hs}%</td><td>${a.s.acs}</td></tr>`).join("")}
+    </table></div></div>` : ""}
+
+    ${porMapa.length ? `<div class="card" style="margin-top:12px"><h2 style="margin-top:0">Por mapa</h2><div class="scroll-x"><table class="trk-ag trk-mp">
+      <tr><th>Mapa</th><th>Partidas</th><th>% Vitória</th><th>K / D / A médio</th><th>K/D</th><th>HS</th><th>ACS</th></tr>
+      ${porMapa.map(a => `<tr>
+        <td><span class="agn">${a.img ? `<img class="mp" src="${esc(a.img)}" alt="" onerror="this.remove()">` : ""}<b>${esc(a.nome)}</b></span></td>
+        <td>${a.s.n}</td><td class="${a.s.wr >= 50 ? "w" : "lo"}">${a.s.wr}%</td><td>${a.s.km} / ${a.s.dm} / ${a.s.am}</td>
+        <td>${a.s.kd}</td><td>${a.s.hs}%</td><td>${a.s.acs}</td></tr>`).join("")}
+    </table></div></div>` : ""}
+
+    <div class="card" style="margin-top:12px"><h2 style="margin-top:0">Últimas partidas</h2>
+      ${t.lista.length ? `<div class="trk-partidas">${t.lista.map(m => linhaPartida({ ...m, icone: agenteIcone("", m.agente) || m.icone, mapaImg: mapaImg(m.mapa) }, quando(m.quando))).join("")}</div>` : '<p class="empty">Nenhuma partida competitiva recente.</p>'}
+    </div>
+    ${trocar}`;
+}
+
+
+/* ---------------------------------------------------------- Contador (dia em destaque) */
+let diaSel = null, mesSel = null;
+const linhaPartida = (m, sub) => `<div class="trk-partida ${m.resultado}"${m.mapaImg ? ` style="background-image:linear-gradient(90deg,var(--panel2) 40%,rgba(24,29,43,.5) 62%,rgba(24,29,43,.92) 88%),url('${esc(m.mapaImg)}')"` : ""}>
+  <span class="res">${m.resultado === "V" ? "Vitória" : m.resultado === "D" ? "Derrota" : "Empate"}</span>
+  <span class="ag">${m.icone ? `<img src="${esc(m.icone)}" alt="" title="${esc(m.agente)}" onerror="this.remove()">` : ""}</span>
+  <span class="mapa"><b>${esc(m.mapa || "?")}</b><small>${esc(m.agente || "")}${sub ? " · " + esc(sub) : ""}</small></span>
+  <span class="plac">${esc(m.placar || "")}</span>
+  <span class="kda"><b>${m.k}/${m.d}/${m.a}</b><small>HS ${m.hs}% · ACS ${m.acs}</small></span></div>`;
+
+function graficoMes(d, mes, sel){
+  const [y, m] = mes.split("-").map(Number), N = new Date(y, m, 0).getDate(), hoje = hojeISO();
+  const W = 720, H = 230, P = { l: 28, r: 8, t: 16, b: 26 }, mid = (H - P.b + P.t) / 2;
+  const ks = [...Array(N)].map((_, i) => `${mes}-${String(i + 1).padStart(2, "0")}`);
+  const max = Math.max(1, ...ks.map(k => Math.max(+d[k]?.ganhou || 0, +d[k]?.perdeu || 0)));
+  const bw = (W - P.l - P.r) / N, hh = mid - P.t;
+  let s = `<line x1="${P.l}" x2="${W - P.r}" y1="${mid}" y2="${mid}" stroke="var(--line)"/>
+    <text x="${P.l - 6}" y="${P.t + 8}" fill="var(--muted)" font-size="10" text-anchor="end">${max}</text>
+    <text x="${P.l - 6}" y="${mid * 2 - P.t}" fill="var(--muted)" font-size="10" text-anchor="end">${max}</text>`;
+  ks.forEach((k, i) => {
+    const g = +d[k]?.ganhou || 0, p = +d[k]?.perdeu || 0, x = P.l + i * bw, hg = g / max * hh, hp = p / max * hh, fut = k > hoje;
+    s += `<g class="gdia${k === sel ? " sel" : ""}${fut ? " fut" : ""}" ${fut ? "" : `data-act="dia-sel" data-dia="${k}"`}>
+      <rect class="hit" x="${x}" y="${P.t - 8}" width="${bw}" height="${H - P.b - P.t + 14}" rx="4"/>
+      ${g ? `<rect x="${x + 2}" y="${mid - hg}" width="${bw - 4}" height="${hg}" rx="3" fill="var(--win)"/>` : ""}
+      ${p ? `<rect x="${x + 2}" y="${mid}" width="${bw - 4}" height="${hp}" rx="3" fill="var(--loss)"/>` : ""}
+      <title>${fmtDia(k)}: ganhou ${g}, perdeu ${p}</title></g>`;
+    if (i === 0 || (i + 1) % 5 === 0 || k === sel) s += `<text x="${x + bw / 2}" y="${H - 6}" fill="${k === sel ? "var(--accent)" : "var(--muted)"}" font-size="10" font-weight="${k === sel ? 800 : 400}" text-anchor="middle">${i + 1}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" font-family="Inter">${s}</svg>`;
+}
+
+function renderContador(nome, eu){
+  const p = db.perfis[nome], d = dias(nome), hoje = hojeISO();
+  const ehVal = jogo === "valorant" && TRACKER_ON, auto = ehVal && !!p.valorant?.conta;
+  diaSel ||= hoje; mesSel ||= diaSel.slice(0, 7);
+  const sd = soma(d, k => k === diaSel), ss = soma(d, k => k >= inicioSemana(diaSel) && k <= fimSemana(diaSel));
+  const sm = soma(d, k => k.startsWith(mesSel)), tot = soma(d);
+  const pp = s => s.t ? Math.round(s.p / s.t * 100) : 0;
+  const per = (t, s, sub) => `<div class="card period">${donut(s)}<div><h4>${t}</h4><div class="lg">
+      <span><i style="background:var(--win)"></i>Ganhou <b>${s.g}</b> (${s.pct}%)</span>
+      <span><i style="background:var(--loss)"></i>Perdeu <b>${s.p}</b> (${pp(s)}%)</span>
+      <span style="color:var(--muted)">${s.t} partidas · ${esc(sub)}</span></div></div></div>`;
+  const doDia = auto ? Object.values(p.valorant.partidas || {}).filter(m => m.dia === diaSel).sort((a, b) => String(b.hora).localeCompare(String(a.hora))) : [];
+  const tt = k => doDia.reduce((a, m) => a + (+m[k] || 0), 0), n = doDia.length;
+  const meses = [...new Set([...Object.keys(d).map(k => k.slice(0, 7)), mesSel, hoje.slice(0, 7)])].sort().reverse();
+  const diasMes = Object.keys(d).filter(k => k.startsWith(mesSel)).sort().reverse();
+
+  let topo = "";
+  if (auto) topo = `<div class="card syncbar"><span>🎯 Ranqueadas puxadas sozinhas do tracker: <b>${esc(p.valorant.conta)}</b></span>
+    <span class="syncbtns">${backend.salva ? `<button class="btn ghost" data-act="sync" data-nome="${esc(nome)}">↻ Sincronizar agora</button>` : ""}${eu && !leitura ? '<button class="btn ghost" data-act="aba" data-aba="tracker">Trocar conta</button>' : ""}</span></div>`;
+  else if (ehVal) topo = eu && !leitura ? formContaValorant() : `<p class="tag" style="margin-bottom:16px">${esc(nome)} ainda não vinculou a conta do Valorant.</p>`;
+  else if (eu && !leitura) topo = `
+    <form class="card reg" id="regForm">
+      <h3>Registrar partidas de hoje · ${ICONE[jogo]} ${JOGOS[jogo]}</h3>
+      <label class="f">Quantas você ganhou?<input class="inp win" type="number" id="regG" min="-100" max="100" step="1" placeholder="0"></label>
+      <label class="f">Quantas você perdeu?<input class="inp loss" type="number" id="regP" min="-100" max="100" step="1" placeholder="0"></label>
+      <button class="btn">Salvar</button>
+      <small>Soma no dia de hoje (${fmtDia(hoje)}). Errou? Digite um número negativo para corrigir.</small>
+    </form>`;
+  else if (!sessao && !leitura) topo = `<p class="tag" style="margin-bottom:16px">Este perfil é seu? Responda "Quem é você?" na barra lateral para editar.</p>`;
+
+  return `${topo}
+    <div class="card dia">
+      <div class="dia-head">
+        <button class="nav" data-act="dia" data-d="-1" title="Dia anterior">‹</button>
+        <div class="dia-t"><small>${diaSel === hoje ? "Hoje" : fmtDia(diaSel)}</small><b>${fmtDiaLongo(diaSel)}</b></div>
+        <button class="nav" data-act="dia" data-d="1" title="Próximo dia" ${diaSel >= hoje ? "disabled" : ""}>›</button>
+      </div>
+      ${diaSel !== hoje ? '<div class="dia-volta"><button class="tag" data-act="dia-hoje">Voltar para hoje</button></div>' : ""}
+      <div class="dia-kpis">
+        <div><span>Partidas</span><b>${sd.t}</b></div>
+        <div class="w"><span>Ganhou</span><b>${sd.g}</b></div>
+        <div class="lo"><span>Perdeu</span><b>${sd.p}</b></div>
+        <div class="p"><span>% Vitória</span><b>${sd.t ? sd.pct + "%" : "—"}</b></div>
+        ${auto ? `<div><span>K/D</span><b>${n ? (tt("d") ? (tt("k") / tt("d")).toFixed(2) : tt("k")) : "—"}</b></div>
+        <div><span>HS médio</span><b>${n ? Math.round(tt("hs") / n) + "%" : "—"}</b></div>
+        <div><span>ACS médio</span><b>${n ? Math.round(tt("acs") / n) : "—"}</b></div>` : ""}
+      </div>
+      ${auto ? (n ? `<div class="trk-partidas">${doDia.map(m => linhaPartida({ ...m, icone: agenteIcone(m.agenteId, m.agente), mapaImg: mapaImg(m.mapa, m.mapaId) }, m.hora)).join("")}</div>` : '<p class="empty">Nenhuma ranqueada neste dia.</p>') : ""}
+    </div>
+
+    <div class="periods">${per("Dia", sd, diaSel === hoje ? "hoje" : fmtDia(diaSel))}${per("Semana", ss, `${fmtDia(inicioSemana(diaSel)).slice(0, 5)} a ${fmtDia(fimSemana(diaSel)).slice(0, 5)}`)}${per("Mês", sm, fmtMes(mesSel))}</div>
+
+    <div class="card chart">
+      <div class="chart-head"><h2>Dia a dia · <span style="color:var(--win)">ganhou ▲</span> <span style="color:var(--loss)">perdeu ▼</span></h2>
+        <div class="mesnav"><button class="nav" data-act="mes" data-d="-1" title="Mês anterior">‹</button><b>${fmtMesLongo(mesSel)}</b><button class="nav" data-act="mes" data-d="1" title="Próximo mês" ${mesSel >= hoje.slice(0, 7) ? "disabled" : ""}>›</button></div></div>
+      ${graficoMes(d, mesSel, diaSel)}
+      <p class="chart-hint">Clique num dia do gráfico para ver só aquele dia.</p>
+    </div>
+
+    <div class="tables">
+      <div class="card"><h2 style="margin-top:0">Por mês</h2><div class="scroll"><table>
+        <tr><th>Mês</th><th>Ganhou</th><th>Perdeu</th><th>%</th></tr>
+        ${meses.map(m => { const s = soma(d, k => k.startsWith(m)); return `<tr class="clic ${m === mesSel ? "sel" : ""}" data-act="mes-sel" data-mes="${m}"><td>${fmtMes(m)}</td><td class="w">${s.g}</td><td class="lo">${s.p}</td><td>${s.pct}%${pbar(s)}</td></tr>`; }).join("")}
+      </table></div></div>
+      <div class="card"><h2 style="margin-top:0">Dias de ${fmtMesLongo(mesSel)}</h2><div class="scroll"><table>
+        <tr><th>Dia</th><th>Ganhou</th><th>Perdeu</th><th>%</th></tr>
+        ${diasMes.map(k => { const s = soma(d, x => x === k); return `<tr class="clic ${k === diaSel ? "sel" : ""}" data-act="dia-sel" data-dia="${k}"><td>${fmtDia(k)}</td><td class="w">${s.g}</td><td class="lo">${s.p}</td><td>${s.pct}%${pbar(s)}</td></tr>`; }).join("") || '<tr><td colspan="4" class="empty">Sem partidas neste mês.</td></tr>'}
+      </table></div></div>
+    </div>
+
+    <h2 style="margin-top:22px">Geral</h2>
     <div class="kpis">
       <div class="card kpi"><div class="l">Partidas</div><div class="v">${tot.t}</div></div>
       <div class="card kpi w"><div class="l">Ganhou</div><div class="v">${tot.g}</div></div>
       <div class="card kpi lo"><div class="l">Perdeu</div><div class="v">${tot.p}</div></div>
       <div class="card kpi p"><div class="l">% Vitória</div><div class="v">${tot.pct}%</div></div>
-    </div>
-
-    <div class="periods">${per("Hoje", sh)}${per("Semana", ss)}${per("Mês", sm)}</div>
-
-    <div class="card chart"><h2 style="margin-top:0">Últimos 30 dias · <span style="color:var(--win)">ganhou ▲</span> <span style="color:var(--loss)">perdeu ▼</span></h2>${grafico30(d)}</div>
-
-    <div class="tables">
-      <div class="card"><h2 style="margin-top:0">Histórico por mês</h2><div class="scroll"><table>
-        <tr><th>Mês</th><th>Ganhou</th><th>Perdeu</th><th>%</th></tr>
-        ${Object.keys(porMes).sort().reverse().map(m => { const s = soma(porMes[m]); return `<tr><td>${fmtMes(m)}</td><td class="w">${s.g}</td><td class="lo">${s.p}</td><td>${s.pct}%${pbar(s)}</td></tr>`; }).join("") || '<tr><td colspan="4" class="empty">Sem partidas.</td></tr>'}
-      </table></div></div>
-      <div class="card"><h2 style="margin-top:0">Histórico por dia</h2><div class="scroll"><table>
-        <tr><th>Dia</th><th>Ganhou</th><th>Perdeu</th><th>%</th></tr>
-        ${Object.keys(d).sort().reverse().map(k => { const s = soma({ [k]: d[k] }); return `<tr><td>${fmtDia(k)}</td><td class="w">${s.g}</td><td class="lo">${s.p}</td><td>${s.pct}%${pbar(s)}</td></tr>`; }).join("") || '<tr><td colspan="4" class="empty">Sem partidas.</td></tr>'}
-      </table></div></div>
     </div>`;
+}
+
+/* ---------------------------------------------------------- Sincronização das ranqueadas (tracker -> placar.json) */
+const inicioMes = () => hojeISO().slice(0, 7) + "-01";
+function partidaDoTracker(m){
+  const st = m.stats || {}, meta = m.meta || {}, ini = new Date(meta.started_at || 0);
+  if (!meta.id || isNaN(ini)) return null;
+  const time = String(st.team || "").toLowerCase(), outro = time === "red" ? "blue" : "red";
+  const rw = x => x && typeof x === "object" ? (+x.rounds_won || +x.won || 0) : (+x || 0);
+  const a = rw(m.teams?.[time]), b = rw(m.teams?.[outro]), rounds = a + b || 1;
+  const sh = st.shots || {}, tiros = (sh.head || 0) + (sh.body || 0) + (sh.leg || 0);
+  return { id: String(meta.id), dia: iso(ini), hora: `${String(ini.getHours()).padStart(2, "0")}:${String(ini.getMinutes()).padStart(2, "0")}`,
+    resultado: a > b ? "V" : a < b ? "D" : "E", placar: `${a}-${b}`, mapa: meta.map?.name || "", agente: st.character?.name || "", agenteId: st.character?.id || "", mapaId: meta.map?.id || "",
+    k: st.kills || 0, d: st.deaths || 0, a: st.assists || 0, hs: tiros ? Math.round((sh.head || 0) / tiros * 100) : 0, acs: Math.round((st.score || 0) / rounds) };
+}
+async function buscarRanqueadas(cfg){
+  const [n, t] = cfg.conta.split("#"), q = `${encodeURIComponent(n)}/${encodeURIComponent(t)}`, reg = cfg.regiao || "br", desde = cfg.desde || inicioMes();
+  const out = [];
+  for (let page = 1; page <= 8; page++) {
+    const lista = await henrik(`v1/stored-matches/${reg}/${q}?mode=competitive&page=${page}&size=25`);
+    if (!Array.isArray(lista) || !lista.length) break;
+    let antigas = false;
+    for (const m of lista) { const x = partidaDoTracker(m); if (!x) continue; if (x.dia < desde) { antigas = true; continue; } out.push(x); }
+    if (antigas || lista.length < 25) break;
+  }
+  return out;
+}
+const sincronizando = new Set();
+async function sincronizarRanqueadas(nomePerfil){
+  if (!TRACKER_ON || !backend?.salva) return 0;
+  const v = db.perfis[nomePerfil]?.valorant;
+  if (!v?.conta || sincronizando.has(nomePerfil)) return 0;
+  sincronizando.add(nomePerfil);
+  try {
+    const ja = v.partidas || {}, novas = (await buscarRanqueadas(v)).filter(m => !ja[m.id]);
+    const elo = await eloDoTracker(v), eloMudou = elo && elo !== db.perfis[nomePerfil].elo;
+    if (!novas.length && v.migrado && !eloMudou) return 0;
+    await acao({ op: "valorant_sync", nome: nomePerfil, partidas: novas.slice(0, 300), ...(eloMudou ? { elo } : {}) });
+    render();
+    return novas.length;
+  } finally { sincronizando.delete(nomePerfil); }
+}
+async function sincronizarTodos(){
+  for (const n of Object.keys(db.perfis)) {
+    try { const k = await sincronizarRanqueadas(n); if (k) toast(`${n}: +${k} ranqueadas do tracker`); }
+    catch (e) { console.warn("sync", n, e.message); }
+  }
+}
+let syncLigado = false;
+function ligarSync(){
+  if (syncLigado || !TRACKER_ON || !backend?.salva) return;
+  syncLigado = true; sincronizarTodos(); setInterval(sincronizarTodos, 5 * 60 * 1000);
 }
 
 function abrirPerfilDlg(nome, editar){
@@ -426,11 +851,16 @@ function abrirPerfilDlg(nome, editar){
           <label class="f">Nome<input class="inp" id="editNome" value="${esc(nome)}" maxlength="24" required></label>
           <label class="f">Novo PIN<input class="inp" id="editPin" placeholder="••••" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" title="4 números"></label>
         </div>
-        ${eloPicker("editElo", p.elo)}
+        ${TRACKER_ON ? `<div class="row2 conta2">
+          <label class="f">Conta do Valorant<input class="inp" id="editConta" placeholder="Nome#TAG" value="${esc(p.valorant?.conta || "")}" maxlength="22"></label>
+          <label class="f">Região<select class="inp" id="editRegiao">${Object.entries(REGIOES).map(([k, n]) => `<option value="${k}" ${k === (p.valorant?.regiao || "br") ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+        </div>` : ""}
+        ${contaVal(p) ? `<p class="tag">${elo(p.elo, 18)} Elo vem direto do tracker: ${esc(p.elo || "sem rank")}</p>` : eloPicker("editElo", p.elo)}
         <button class="btn">Salvar alterações</button>
       </form>` : ""}`;
   if (!dlg.open) dlg.showModal();
-  if (editar) dlg.querySelector("#editNome")?.focus();
+  if (editar === "conta") { const c = dlg.querySelector("#editConta"); c?.scrollIntoView({ block: "center" }); c?.focus(); }
+  else if (editar) dlg.querySelector("#editNome")?.focus();
   else dlg.querySelector(".x").focus();
 }
 
@@ -531,7 +961,16 @@ document.addEventListener("click", async e => {
     if (act === "sair") { sair(); render(); }
     if (act === "trocar-foto") $("fotoRapida").click();
     if (act === "expandir") abrirPerfilDlg(b.dataset.nome, false);
+    if (act === "aba") { aba = b.dataset.aba; render(); }
+    if (act === "dia-sel") { diaSel = b.dataset.dia; mesSel = diaSel.slice(0, 7); render(); document.querySelector(".dia")?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+    if (act === "dia") { diaSel = somarDias(diaSel || hojeISO(), +b.dataset.d); if (diaSel > hojeISO()) diaSel = hojeISO(); mesSel = diaSel.slice(0, 7); render(); }
+    if (act === "dia-hoje") { diaSel = hojeISO(); mesSel = diaSel.slice(0, 7); render(); }
+    if (act === "mes") { mesSel = somarMeses(mesSel || hojeISO().slice(0, 7), +b.dataset.d); render(); }
+    if (act === "mes-sel") { mesSel = b.dataset.mes; render(); }
+    if (act === "sync") { b.disabled = true; b.textContent = "Sincronizando..."; const n = await sincronizarRanqueadas(b.dataset.nome); render(); toast(n ? `+${n} ranqueadas novas do tracker` : "Tudo em dia com o tracker."); }
+    if (act === "trk-recarregar") { carregarTracker(b.dataset.nome, true); render(); }
     if (act === "editar") abrirPerfilDlg(b.dataset.nome, true);
+    if (act === "editar-conta") abrirPerfilDlg(b.dataset.nome, "conta");
     if (act === "fechar") $("perfilDlg").close();
     if (act === "gh-sair") { store.set("ghToken", null); location.reload(); }
     if (act === "fav") { await acao(comPin({ op: "favorito", alvo: b.dataset.nome })); render(); }
@@ -569,6 +1008,13 @@ document.addEventListener("submit", async e => {
       sessao = { nome, pin }; try { sessionStorage.setItem("sessao", JSON.stringify(sessao)); } catch {}
       view = nome; render(); toast(`Fala, ${nome}!`);
     }
+    if (f.id === "contaForm") {
+      const conta = $("contaRiot").value.trim().replace(/\s*#\s*/, "#"), regiao = $("contaRegiao").value;
+      if (!CONTA_RE.test(conta)) throw new Error("Use o formato Nome#TAG, por exemplo Lopes#BR1.");
+      await acao(comPin({ op: "perfil_editar", valorant: { conta, regiao } }));
+      render(); toast("Conta do Valorant salva! Puxando as ranqueadas do mês...");
+      sincronizarRanqueadas(sessao.nome).then(n => { render(); if (n) toast(`+${n} ranqueadas do mês importadas`); }).catch(e => toast(e.message, 1));
+    }
     if (f.id === "regForm") {
       const g = parseInt($("regG").value || 0, 10), p = parseInt($("regP").value || 0, 10);
       await acao(comPin({ op: "registrar", jogo, ganhou: g, perdeu: p }));
@@ -578,7 +1024,14 @@ document.addEventListener("submit", async e => {
       const foto = await lerFoto($("editFoto").files[0]);
       const sel = f.querySelector('input[name="editElo"]:checked');
       const novoNome = $("editNome").value.trim(), novoPin = $("editPin").value.trim();
-      const nome = await acao(comPin({ op: "perfil_editar", novoNome, ...(novoPin ? { novoPin } : {}), ...(foto ? { foto } : {}), ...(sel ? { elo: sel.value } : {}) }));
+      let valorant = null;
+      if ($("editConta")) {
+        const atual = db.perfis[sessao.nome]?.valorant || {}, c = $("editConta").value.trim().replace(/\s*#\s*/, "#"), r = $("editRegiao").value;
+        if (c && !CONTA_RE.test(c)) throw new Error("Conta do Valorant: use o formato Nome#TAG.");
+        if (c && (c !== atual.conta || r !== atual.regiao)) valorant = { conta: c, regiao: r };
+      }
+      const nome = await acao(comPin({ op: "perfil_editar", novoNome, ...(novoPin ? { novoPin } : {}), ...(foto ? { foto } : {}), ...(sel ? { elo: sel.value } : {}), ...(valorant ? { valorant } : {}) }));
+      if (valorant) sincronizarRanqueadas(nome).catch(e => toast(e.message, 1));
       sessao = { nome, pin: novoPin || sessao.pin }; try { sessionStorage.setItem("sessao", JSON.stringify(sessao)); } catch {}
       $("perfilDlg").close(); view = nome; render(); toast("Perfil atualizado.");
     }
@@ -663,10 +1116,34 @@ function aplicar(data, o){
     data.perfis[nome] = { foto: o.foto || "", pin: o.pin, elo: o.elo || "", favoritos: [], partidas: vazioPartidas() };
     return nome;
   }
+  if (o.op === "valorant_sync") { // partidas ranqueadas vindas do tracker (sem PIN: os dados vêm da API)
+    const nome = acharNome(data, o.nome), p = data.perfis[nome], v = p.valorant;
+    if (!v?.conta) throw new Error("Esse perfil não tem conta do Valorant.");
+    if (!v.migrado) { p.partidas.valorant = {}; v.migrado = true; } // o contador do Valorant passa a vir só do tracker
+    v.partidas ||= {};
+    const txt = (x, n) => String(x ?? "").slice(0, n), num = x => Math.max(0, Math.min(9999, Math.round(+x || 0)));
+    for (const m of (o.partidas || []).slice(0, 300)) {
+      if (!m || typeof m.id !== "string" || !m.id || m.id.length > 64 || v.partidas[m.id]) continue;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(m.dia) || m.dia < (v.desde || "") || !["V", "D", "E"].includes(m.resultado)) continue;
+      v.partidas[m.id] = { dia: m.dia, hora: txt(m.hora, 5), resultado: m.resultado, placar: txt(m.placar, 7), mapa: txt(m.mapa, 20),
+        agente: txt(m.agente, 20), agenteId: txt(m.agenteId, 40), mapaId: txt(m.mapaId, 40), k: num(m.k), d: num(m.d), a: num(m.a), hs: num(m.hs), acs: num(m.acs) };
+    }
+    if (o.elo && ELOS.includes(o.elo)) p.elo = o.elo; // elo direto do tracker
+    return nome;
+  }
   const nome = autenticar(data, o), p = data.perfis[nome];
   if (o.op === "perfil_editar") {
     if (o.foto) { validarFoto(o.foto); p.foto = o.foto; }
     if ("elo" in o) { if (!ELOS.includes(o.elo || "")) throw new Error("Elo inválido."); p.elo = o.elo || ""; }
+    if ("valorant" in o) {
+      const v = o.valorant;
+      if (!v || !v.conta) delete p.valorant;
+      else {
+        if (!/^[^#]{3,16}#[A-Za-z0-9]{2,5}$/.test(v.conta)) throw new Error("Use o formato Nome#TAG.");
+        if (!["br", "latam", "na", "eu", "ap", "kr"].includes(v.regiao)) throw new Error("Região inválida.");
+        p.valorant = { ...(p.valorant || {}), conta: v.conta, regiao: v.regiao, desde: p.valorant?.desde || (hojeISO().slice(0, 7) + "-01") };
+      }
+    }
     if (o.novoPin) { if (!/^\d{4}$/.test(o.novoPin)) throw new Error("PIN precisa ter 4 números."); p.pin = o.novoPin; }
     const nn = String(o.novoNome ?? nome).trim();
     if (nn !== nome) { // troca o nome (a chave) e atualiza os favoritos de todo mundo
@@ -716,7 +1193,7 @@ const b64dec = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(
 function githubBackend(token){
   const base = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/`;
   const hdr = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" };
-  let data = null, sha = null;
+  let data = null, sha = null, fila = Promise.resolve();
   const erroHttp = async (r, acao) => {
     let det = ""; try { det = (await r.json()).message || ""; } catch {}
     const msg = r.status === 401 ? "Token inválido ou expirado." :
@@ -747,11 +1224,14 @@ function githubBackend(token){
     } catch {}
   }
   const mensagem = (o, nome) => o.op === "registrar" ? `${nome}: +${o.ganhou || 0} ganhou, +${o.perdeu || 0} perdeu (${JOGOS[o.jogo]})`
-    : o.op === "perfil_criar" ? `Novo perfil: ${nome}` : o.op === "favorito" ? `${nome} favoritou ${o.alvo}` : `${nome} editou o perfil`;
+    : o.op === "valorant_sync" ? `${nome}: +${(o.partidas || []).length} ranqueadas do tracker` : o.op === "perfil_criar" ? `Novo perfil: ${nome}` : o.op === "favorito" ? `${nome} favoritou ${o.alvo}` : `${nome} editou o perfil`;
   return {
     salva: true, github: true, intervalo: 15000,
     async get(){ await ler(); return publico(data); },
-    async post(o){
+    // Uma gravação por vez: duas ao mesmo tempo (ex.: elo + ranqueadas) não podem se sobrescrever.
+    post(o){ const r = fila.then(() => gravar(o)); fila = r.catch(() => {}); return r; }
+  };
+  async function gravar(o){
       if (o.op === "login") { await ler(); return { nome: aplicar(data, o), ...publico(data) }; }
       for (let t = 0; t < 3; t++) {
         await ler();
@@ -765,8 +1245,7 @@ function githubBackend(token){
         } catch (e) { if (!e.conflito) throw e; }
       }
       throw new Error("Outra pessoa salvou ao mesmo tempo. Tente de novo.");
-    }
-  };
+  }
 }
 
 /* 3) Sem token: lê o placar.json publicado e só exibe. */
@@ -834,7 +1313,7 @@ async function conectarGitHub(token){
   store.set("ghToken", token);
   backend = g; leitura = false; db = d; lastText = JSON.stringify(d);
   if (sessao && !sessao.pin) sair();
-  atualizarBanner(); render(); iniciarAtualizacao();
+  atualizarBanner(); render(); iniciarAtualizacao(); ligarSync();
 }
 
 /* ---------------------------------------------------------- Discord Activity */
@@ -849,6 +1328,8 @@ async function iniciarDiscord(){
     { prefix: "/gh", target: "api.github.com" },
     { prefix: "/raw", target: "raw.githubusercontent.com" },
     { prefix: "/elos", target: "media.valorant-api.com" },
+    { prefix: "/henrik", target: "api.henrikdev.xyz" },
+    { prefix: "/vapi", target: "valorant-api.com" },
   ], { patchFetch: true, patchXhr: true, patchSrcAttributes: true });
   const sdk = new DiscordSDK(DISCORD_APP_ID);
   await sdk.ready();
@@ -875,7 +1356,7 @@ async function iniciar(){
   db = await backend.get(); lastText = JSON.stringify(db);
   $("addElo").innerHTML = eloPicker("addElo");
   previewFoto($("addFoto"), $("addPrev"));
-  atualizarBanner(); render(); iniciarAtualizacao();
+  atualizarBanner(); render(); iniciarAtualizacao(); ligarSync(); carregarAssets();
 }
 iniciar();
 </script>
