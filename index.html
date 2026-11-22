@@ -224,6 +224,9 @@
   .trk-kpis small{color:var(--muted);font-size:12px}
   .trk-nota{color:var(--muted);font-size:12px;margin:-6px 0 12px}
   .scroll-x{overflow-x:auto}
+  .trk-conta-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:15px}
+  .trk-conta-top span{color:var(--muted);font-size:13px}
+  .trk-conta-top .btn{padding:7px 14px;font-size:13px;margin-left:auto}
   .trk-cont{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
   .trk-cont .card{padding:16px 18px}
   .trk-cont span{display:block;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -688,6 +691,9 @@ function renderTracker(nome, eu){
   const porMapa = Object.values(base.reduce((acc, m) => { (acc[m.mapa || "?"] ||= { nome: m.mapa || "?", img: mapaImg(m.mapa, m.mapaId), lista: [] }).lista.push(m); return acc; }, {}))
     .map(a => ({ ...a, s: statsPartidas(a.lista) })).sort((x, y) => y.s.n - x.s.n || y.s.wr - x.s.wr);
   return `
+    <div class="trk-conta-top">🎯 <b>${esc(cfg.conta)}</b><span>${esc(REGIOES[cfg.regiao] || cfg.regiao)}</span>
+      ${eu && !leitura ? `<button class="btn ghost" data-act="editar-conta" data-nome="${esc(nome)}">✎ Trocar conta</button>` : ""}</div>
+
     ${usaSalvas ? `<div class="card trk-per">
       <div class="trk-per-ops">${[["dia", "Dia"], ["semana", "Semana"], ["mes", "Mês"], ["ano", "Ano"], ["tudo", "Tudo"]].map(([k, n]) => `<button data-act="trk-per" data-p="${k}" class="${trkPeriodo === k ? "on" : ""}">${n}</button>`).join("")}</div>
       ${trkPeriodo !== "tudo" ? `<div class="trk-per-nav"><button class="nav" data-act="trk-nav" data-d="-1" title="Anterior">‹</button><b>${esc(per.rotulo)}</b><button class="nav" data-act="trk-nav" data-d="1" title="Próximo" ${per.ultimo ? "disabled" : ""}>›</button></div>` : `<div class="trk-per-nav"><b>Desde ${fmtDia(p.valorant.desde || inicioAno())}</b></div>`}
@@ -742,8 +748,7 @@ function renderTracker(nome, eu){
       ${usaSalvas
         ? (base.length ? `<div class="trk-partidas">${base.slice(0, 60).map(m => linhaPartida(m, `${fmtDia(m.dia).slice(0, 5)} ${m.hora || ""}`)).join("")}</div>${base.length > 60 ? `<p class="trk-nota" style="margin-top:8px">Mostrando as 60 mais recentes de ${base.length}.</p>` : ""}` : '<p class="empty">Nenhuma ranqueada neste período.</p>')
         : (t.lista.length ? `<div class="trk-partidas">${t.lista.map(m => linhaPartida({ ...m, icone: agenteIcone("", m.agente) || m.icone, mapaImg: mapaImg(m.mapa) }, quando(m.quando))).join("")}</div>` : '<p class="empty">Nenhuma partida competitiva recente.</p>')}
-    </div>
-    ${trocar}`;
+    </div>`;
 }
 
 
