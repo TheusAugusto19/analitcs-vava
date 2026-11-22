@@ -1863,6 +1863,21 @@
             "a": 3,
             "hs": 41,
             "acs": 230
+          },
+          "5c185356-2d58-4009-aac3-060b1fe338d4": {
+            "dia": "2026-11-22",
+            "hora": "13:28",
+            "resultado": "V",
+            "placar": "14-12",
+            "mapa": "Sunset",
+            "agente": "Jett",
+            "agenteId": "add6443a-41bd-e414-f6ad-e58d267f4e95",
+            "mapaId": "92584fbe-486a-b1b2-9faa-39b0f486b498",
+            "k": 21,
+            "d": 20,
+            "a": 1,
+            "hs": 51,
+            "acs": 208
           }
         }
       }
