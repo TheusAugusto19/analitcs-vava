@@ -1743,6 +1743,36 @@
             "a": 6,
             "hs": 24,
             "acs": 177
+          },
+          "73b1bf68-a1d0-4de0-b5c6-d7cb60f69693": {
+            "dia": "2026-11-22",
+            "hora": "00:54",
+            "resultado": "D",
+            "placar": "5-13",
+            "mapa": "Abyss",
+            "agente": "Jett",
+            "agenteId": "add6443a-41bd-e414-f6ad-e58d267f4e95",
+            "mapaId": "224b0a95-48b9-f703-1bd8-67aca101a61f",
+            "k": 10,
+            "d": 18,
+            "a": 1,
+            "hs": 28,
+            "acs": 183
+          },
+          "1aab3590-8b89-447c-a439-844caecf8060": {
+            "dia": "2026-11-22",
+            "hora": "00:15",
+            "resultado": "D",
+            "placar": "10-13",
+            "mapa": "Corrode",
+            "agente": "Jett",
+            "agenteId": "add6443a-41bd-e414-f6ad-e58d267f4e95",
+            "mapaId": "1c18ab1f-420d-0d8b-71d0-77ad3c439115",
+            "k": 17,
+            "d": 19,
+            "a": 8,
+            "hs": 44,
+            "acs": 231
           }
         }
       }
