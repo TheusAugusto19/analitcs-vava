@@ -9293,6 +9293,21 @@
             "a": 4,
             "hs": 25,
             "acs": 273
+          },
+          "e2d2f5ee-6f5f-4eee-805a-d61bd89371a8": {
+            "dia": "2026-11-15",
+            "hora": "14:02",
+            "resultado": "V",
+            "placar": "13-9",
+            "mapa": "Lotus",
+            "agente": "Vyse",
+            "agenteId": "efba5359-4016-a1e5-7626-b1ae76895940",
+            "mapaId": "2fe4ed3a-450a-948b-6d6b-e89a78e680a9",
+            "k": 27,
+            "d": 14,
+            "a": 4,
+            "hs": 26,
+            "acs": 328
           }
         }
       }
