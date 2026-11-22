@@ -808,6 +808,14 @@ function renderContador(nome, eu){
   else if (!sessao && !leitura) topo = `<p class="tag" style="margin-bottom:16px">Este perfil é seu? Responda "Quem é você?" na barra lateral para editar.</p>`;
 
   return `${topo}
+    <h2 style="margin-top:0">Geral</h2>
+    <div class="kpis">
+      <div class="card kpi"><div class="l">Partidas</div><div class="v">${tot.t}</div></div>
+      <div class="card kpi w"><div class="l">Ganhou</div><div class="v">${tot.g}</div></div>
+      <div class="card kpi lo"><div class="l">Perdeu</div><div class="v">${tot.p}</div></div>
+      <div class="card kpi p"><div class="l">% Vitória</div><div class="v">${tot.pct}%</div></div>
+    </div>
+
     <div class="card dia">
       <div class="dia-head">
         <button class="nav" data-act="dia" data-d="-1" title="Dia anterior">‹</button>
@@ -846,14 +854,7 @@ function renderContador(nome, eu){
         ${diasMes.map(k => { const s = soma(d, x => x === k); return `<tr class="clic ${k === diaSel ? "sel" : ""}" data-act="dia-sel" data-dia="${k}"><td>${fmtDia(k)}</td><td class="w">${s.g}</td><td class="lo">${s.p}</td><td>${s.pct}%${pbar(s)}</td></tr>`; }).join("") || '<tr><td colspan="4" class="empty">Sem partidas neste mês.</td></tr>'}
       </table></div></div>
     </div>
-
-    <h2 style="margin-top:22px">Geral</h2>
-    <div class="kpis">
-      <div class="card kpi"><div class="l">Partidas</div><div class="v">${tot.t}</div></div>
-      <div class="card kpi w"><div class="l">Ganhou</div><div class="v">${tot.g}</div></div>
-      <div class="card kpi lo"><div class="l">Perdeu</div><div class="v">${tot.p}</div></div>
-      <div class="card kpi p"><div class="l">% Vitória</div><div class="v">${tot.pct}%</div></div>
-    </div>`;
+`;
 }
 
 /* ---------------------------------------------------------- Sincronização das ranqueadas (tracker -> placar.json) */
