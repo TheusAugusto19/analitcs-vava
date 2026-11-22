@@ -13,7 +13,7 @@ import re
 import sys
 import threading
 import unicodedata
-from datetime import date
+from datetime import date, timedelta
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -233,6 +233,23 @@ def apply(data: dict, o: dict) -> dict:
             dias[hoje] = dia
         else:
             dias.pop(hoje, None)
+
+    elif op == "aquecimento":  # soma no dia e guarda só os últimos 30 dias
+        try:
+            sgs = round(float(o.get("segundos") or 0))
+        except (TypeError, ValueError):
+            sgs = 0
+        if sgs < 1 or sgs > 6 * 3600:
+            raise ValueError("Tempo de aquecimento inválido (máximo 6 horas).")
+        dia = str(o.get("dia") or "")
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", dia):
+            dia = date.today().isoformat()
+        h = p.setdefault("aquecimento", {})
+        v = h.get(dia) or {"s": 0, "n": 0}
+        h[dia] = {"s": int(v.get("s", 0)) + sgs, "n": int(v.get("n", 0)) + 1}
+        limite = (date.today() - timedelta(days=29)).isoformat()
+        for k in [k for k in h if k < limite]:
+            del h[k]
 
     elif op == "favorito":
         alvo = achar(data, o.get("alvo"))

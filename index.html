@@ -234,6 +234,18 @@
   .trk-kpis small{color:var(--muted);font-size:12px}
   .trk-nota{color:var(--muted);font-size:12px;margin:-6px 0 12px}
   .scroll-x{overflow-x:auto}
+  .aq-relogio{text-align:center;padding:30px 20px;margin-bottom:16px}
+  .aq-relogio.rodando{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 18px 50px -20px var(--accent)}
+  .aq-status{font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .aq-relogio.rodando .aq-status{color:var(--accent)}
+  .aq-tempo{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:clamp(64px,14vw,120px);line-height:1.05;letter-spacing:3px;margin:10px 0 18px;font-variant-numeric:tabular-nums}
+  .aq-relogio.rodando .aq-tempo{color:var(--accent);animation:aqpulso 2s ease-in-out infinite}
+  @keyframes aqpulso{50%{opacity:.8}}
+  @media (prefers-reduced-motion:reduce){.aq-relogio.rodando .aq-tempo{animation:none}}
+  .aq-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .aq-btns .btn{padding:14px 26px;font-size:16px}
+  .aq-nota{color:var(--muted);font-size:13px}
+  .kpi small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
   .trk-conta-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:15px}
   .trk-conta-top span{color:var(--muted);font-size:13px}
   .trk-conta-top .btn{padding:7px 14px;font-size:13px;margin-left:auto}
@@ -516,7 +528,7 @@ const pbar = s => `<div class="pbar" style="${s.t ? "" : "background:var(--line)
 function renderJogos(){
   atualizarJogos();
   if (!JOGOS[jogo]) jogo = "valorant";
-  if (jogo !== "valorant") aba = "contador"; // o tracker é só do Valorant
+  if (jogo !== "valorant" && aba === "tracker") aba = "contador"; // o tracker é só do Valorant
   document.body.dataset.jogo = jogo; aplicarCorJogo();
   $("jogos").innerHTML = Object.entries(JOGOS).map(([k, n]) => `<button data-act="jogo" data-j="${esc(k)}" class="${k === jogo ? "on" : ""}">${esc(ICONE[k])} ${esc(n)}</button>`).join("")
     + `<button class="jogo-add" data-act="jogos" title="Adicionar jogo e trocar cores">＋</button>`;
@@ -573,12 +585,13 @@ function renderPerfil(nome){
       ${sessao && !eu && !leitura ? `<button class="favbtn ${fav ? "on" : ""}" data-act="fav" data-nome="${esc(nome)}">${fav ? "★ Favorito" : "☆ Favoritar"}</button>` : ""}
     </div>
 
-    ${TRACKER_ON && jogo === "valorant" ? `<div class="abas">
-      <button data-act="aba" data-aba="contador" class="${aba !== "tracker" ? "on" : ""}">📊 Contador</button>
-      <button data-act="aba" data-aba="tracker" class="${aba === "tracker" ? "on" : ""}">🎯 Tracker</button>
-    </div>` : ""}
+    <div class="abas">
+      <button data-act="aba" data-aba="contador" class="${aba === "contador" ? "on" : ""}">📊 Contador</button>
+      ${TRACKER_ON && jogo === "valorant" ? `<button data-act="aba" data-aba="tracker" class="${aba === "tracker" ? "on" : ""}">🎯 Tracker</button>` : ""}
+      <button data-act="aba" data-aba="aquecimento" class="${aba === "aquecimento" ? "on" : ""}">🔥 Aquecimento</button>
+    </div>
 
-    ${TRACKER_ON && jogo === "valorant" && aba === "tracker" ? renderTracker(nome, eu) : renderContador(nome, eu)}`;
+    ${aba === "aquecimento" ? renderAquecimento(nome, eu) : TRACKER_ON && jogo === "valorant" && aba === "tracker" ? renderTracker(nome, eu) : renderContador(nome, eu)}`;
 }
 
 /* ---------------------------------------------------------- Tracker do Valorant (HenrikDev API) */
@@ -800,6 +813,62 @@ function renderTracker(nome, eu){
     </div>`;
 }
 
+
+/* ---------------------------------------------------------- Aquecimento (cronômetro por pessoa) */
+/* Histórico no JSON: aquecimento -> "AAAA-MM-DD" -> { s: segundos, n: sessões }. Guarda só os últimos 30 dias. */
+const AQ_DIAS = 30;
+const aqChave = nome => `aquec:${nome}`;
+const aqInicio = nome => { try { return +localStorage.getItem(aqChave(nome)) || 0; } catch { return 0; } };
+const fmtTempo = s => { s = Math.max(0, Math.floor(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(x).padStart(2, "0")}`; };
+const fmtDur = s => { s = Math.round(s); if (s < 60) return `${s}s`; const h = Math.floor(s / 3600), m = Math.round(s % 3600 / 60); return h ? `${h}h ${String(m).padStart(2, "0")}min` : `${m} min`; };
+let aqTimer = null;
+function aqTick(){
+  const el = document.getElementById("aqRelogio");
+  if (!el) { clearInterval(aqTimer); aqTimer = null; return; }
+  const ini = +el.dataset.inicio;
+  el.textContent = ini ? fmtTempo((Date.now() - ini) / 1000) : "00:00:00";
+}
+
+function renderAquecimento(nome, eu){
+  const p = db.perfis[nome], hist = p.aquecimento || {}, hoje = hojeISO(), ini = eu ? aqInicio(nome) : 0;
+  const dias = [...Array(AQ_DIAS)].map((_, i) => somarDias(hoje, i - AQ_DIAS + 1));
+  const seg = k => +hist[k]?.s || 0, tot = ks => ks.reduce((a, k) => a + seg(k), 0);
+  const ult7 = dias.slice(-7), treinados = dias.filter(k => seg(k) > 0);
+  let seq = 0; for (let i = dias.length - 1; i >= 0; i--) { if (seg(dias[i]) > 0) seq++; else if (dias[i] !== hoje) break; }
+  const max = Math.max(60, ...dias.map(seg));
+  const W = 720, H = 180, P = { l: 8, r: 8, t: 18, b: 24 }, bw = (W - P.l - P.r) / AQ_DIAS;
+  const barras = dias.map((k, i) => { const v = seg(k), h = v / max * (H - P.t - P.b), x = P.l + i * bw;
+    return `<g>${v ? `<rect x="${x + 2}" y="${H - P.b - h}" width="${bw - 4}" height="${h}" rx="3" fill="var(--accent)"/>` : `<rect x="${x + 2}" y="${H - P.b - 2}" width="${bw - 4}" height="2" rx="1" fill="var(--line)"/>`}
+      <title>${fmtDia(k)}: ${v ? fmtDur(v) : "sem aquecimento"}</title></g>
+      ${i % 5 === 4 || k === hoje ? `<text x="${x + bw / 2}" y="${H - 6}" fill="${k === hoje ? "var(--accent)" : "var(--muted)"}" font-size="10" text-anchor="middle">${k.slice(8)}/${k.slice(5, 7)}</text>` : ""}`; }).join("");
+  if (eu && ini) setTimeout(() => { if (!aqTimer) aqTimer = setInterval(aqTick, 1000); aqTick(); });
+  return `
+    <div class="card aq-relogio ${ini ? "rodando" : ""}">
+      <div class="aq-status">${ini ? "🔥 Aquecendo agora" : eu ? "Pronto para aquecer?" : "Cronômetro de aquecimento"}</div>
+      <div class="aq-tempo" id="aqRelogio" data-inicio="${ini || ""}">${ini ? fmtTempo((Date.now() - ini) / 1000) : "00:00:00"}</div>
+      ${eu && !leitura ? `<div class="aq-btns">
+        ${ini ? `<button class="btn aq-fim" data-act="aq-fim" data-nome="${esc(nome)}">■ Terminar e salvar</button>
+                 <button class="btn ghost" data-act="aq-cancelar" data-nome="${esc(nome)}">Cancelar</button>`
+              : `<button class="btn aq-ini" data-act="aq-ini" data-nome="${esc(nome)}">▶ Iniciar aquecimento</button>`}
+      </div>` : !eu && !leitura && !sessao ? '<p class="aq-nota">Entre em "Quem é você?" para usar o seu cronômetro.</p>' : ""}
+    </div>
+
+    <div class="kpis">
+      <div class="card kpi p"><div class="l">Hoje</div><div class="v">${fmtDur(seg(hoje))}</div><small>${+hist[hoje]?.n || 0} ${(+hist[hoje]?.n || 0) === 1 ? "sessão" : "sessões"}</small></div>
+      <div class="card kpi"><div class="l">Últimos 7 dias</div><div class="v">${fmtDur(tot(ult7))}</div><small>${ult7.filter(k => seg(k)).length} de 7 dias</small></div>
+      <div class="card kpi"><div class="l">Últimos 30 dias</div><div class="v">${fmtDur(tot(dias))}</div><small>${treinados.length} ${treinados.length === 1 ? "dia" : "dias"} com aquecimento</small></div>
+      <div class="card kpi w"><div class="l">Sequência</div><div class="v">${seq} ${seq === 1 ? "dia" : "dias"}</div><small>média ${treinados.length ? fmtDur(tot(dias) / treinados.length) : "—"} por dia</small></div>
+    </div>
+
+    <div class="card chart"><h2 style="margin-top:0">Aquecimento · últimos 30 dias</h2>
+      <svg viewBox="0 0 ${W} ${H}" font-family="Inter">${barras}</svg></div>
+
+    <div class="card" style="margin-top:12px"><h2 style="margin-top:0">Histórico</h2><div class="scroll"><table>
+      <tr><th>Dia</th><th>Sessões</th><th>Tempo</th></tr>
+      ${treinados.slice().reverse().map(k => `<tr><td>${fmtDiaLongo(k)}</td><td>${+hist[k].n || 1}</td><td><b>${fmtDur(seg(k))}</b></td></tr>`).join("") || '<tr><td colspan="3" class="empty">Nenhum aquecimento nos últimos 30 dias.</td></tr>'}
+    </table></div></div>
+    <p class="trk-nota" style="margin-top:8px">O histórico guarda só os últimos ${AQ_DIAS} dias; o mais antigo é apagado sozinho.</p>`;
+}
 
 /* ---------------------------------------------------------- Contador (dia em destaque) */
 let diaSel = null, mesSel = null;
@@ -1124,6 +1193,17 @@ document.addEventListener("click", async e => {
     if (act === "trocar-foto") $("fotoRapida").click();
     if (act === "expandir") abrirPerfilDlg(b.dataset.nome, false);
     if (act === "aba") { aba = b.dataset.aba; render(); }
+    if (act === "aq-ini") { try { localStorage.setItem(aqChave(b.dataset.nome), String(Date.now())); } catch {} render(); }
+    if (act === "aq-cancelar") { try { localStorage.removeItem(aqChave(b.dataset.nome)); } catch {} render(); toast("Aquecimento cancelado."); }
+    if (act === "aq-fim") {
+      const ini = aqInicio(b.dataset.nome), segundos = Math.round((Date.now() - ini) / 1000);
+      if (!ini) return render();
+      if (segundos < 5) { try { localStorage.removeItem(aqChave(b.dataset.nome)); } catch {} render(); return toast("Muito curto, não foi salvo."); }
+      b.disabled = true; b.textContent = "Salvando...";
+      await acao(comPin({ op: "aquecimento", segundos, dia: iso(new Date(ini)) }));
+      try { localStorage.removeItem(aqChave(b.dataset.nome)); } catch {}
+      render(); toast(`Aquecimento de ${fmtDur(segundos)} salvo!`);
+    }
     if (act === "dia-sel") { diaSel = b.dataset.dia; mesSel = diaSel.slice(0, 7); render(); document.querySelector(".dia")?.scrollIntoView({ behavior: "smooth", block: "start" }); }
     if (act === "dia") { diaSel = somarDias(diaSel || hojeISO(), +b.dataset.d); if (diaSel > hojeISO()) diaSel = hojeISO(); mesSel = diaSel.slice(0, 7); render(); }
     if (act === "dia-hoje") { diaSel = hojeISO(); mesSel = diaSel.slice(0, 7); render(); }
@@ -1353,6 +1433,14 @@ function aplicar(data, o){
     const k = hojeISO(), d = p.partidas[o.jogo], v = d[k] || { ganhou: 0, perdeu: 0 };
     const nv = { ganhou: Math.max(0, (+v.ganhou || 0) + g), perdeu: Math.max(0, (+v.perdeu || 0) + l) };
     if (nv.ganhou || nv.perdeu) d[k] = nv; else delete d[k];
+  } else if (o.op === "aquecimento") { // soma no dia e guarda só os últimos 30 dias
+    const sgs = Math.round(+o.segundos || 0);
+    if (sgs < 1 || sgs > 6 * 3600) throw new Error("Tempo de aquecimento inválido (máximo 6 horas).");
+    const dia = /^\d{4}-\d{2}-\d{2}$/.test(o.dia || "") ? o.dia : hojeISO();
+    const h = p.aquecimento ||= {}, v = h[dia] || { s: 0, n: 0 };
+    h[dia] = { s: (+v.s || 0) + sgs, n: (+v.n || 0) + 1 };
+    const limite = somarDias(hojeISO(), -(AQ_DIAS - 1));
+    for (const k of Object.keys(h)) if (k < limite) delete h[k];
   } else if (o.op === "favorito") {
     const a = acharNome(data, o.alvo);
     if (a === nome) throw new Error("Não dá pra favoritar você mesmo.");
@@ -1416,7 +1504,7 @@ function githubBackend(token){
     } catch {}
   }
   const mensagem = (o, nome) => o.op === "registrar" ? `${nome}: +${o.ganhou || 0} ganhou, +${o.perdeu || 0} perdeu (${JOGOS[o.jogo]})`
-    : o.op === "jogo_criar" ? `Novo jogo: ${o.jogoNome}` : o.op === "jogo_editar" ? `Jogo ${o.id} atualizado` : o.op === "valorant_sync" ? `${nome}: +${(o.partidas || []).length} ranqueadas do tracker` : o.op === "perfil_criar" ? `Novo perfil: ${nome}` : o.op === "favorito" ? `${nome} favoritou ${o.alvo}` : `${nome} editou o perfil`;
+    : o.op === "aquecimento" ? `${nome}: aquecimento de ${fmtDur(o.segundos)}` : o.op === "jogo_criar" ? `Novo jogo: ${o.jogoNome}` : o.op === "jogo_editar" ? `Jogo ${o.id} atualizado` : o.op === "valorant_sync" ? `${nome}: +${(o.partidas || []).length} ranqueadas do tracker` : o.op === "perfil_criar" ? `Novo perfil: ${nome}` : o.op === "favorito" ? `${nome} favoritou ${o.alvo}` : `${nome} editou o perfil`;
   return {
     salva: true, github: true, intervalo: 15000,
     async get(){ await ler(); return publico(data); },
