@@ -227,6 +227,13 @@
   .trk-conta-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:15px}
   .trk-conta-top span{color:var(--muted);font-size:13px}
   .trk-conta-top .btn{padding:7px 14px;font-size:13px;margin-left:auto}
+  .trk-agf{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .trk-agf button{display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:600;font-size:13px}
+  .trk-agf button:first-child{padding-left:12px}
+  .trk-agf button:hover{border-color:var(--accent)}
+  .trk-agf button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent);box-shadow:0 4px 14px -6px var(--accent)}
+  .trk-agf img{width:22px;height:22px;border-radius:50%;background:var(--panel2)}
+  .trk-agf small{opacity:.7;font-size:11px}
   .trk-cont{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
   .trk-cont .card{padding:16px 18px}
   .trk-cont span{display:block;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -645,7 +652,7 @@ function formContaValorant(cfg){
 }
 
 /* Período do tracker: dia | semana | mes | ano | tudo, a partir de uma data de referência. */
-let trkPeriodo = "mes", trkRef = null;
+let trkPeriodo = "mes", trkRef = null, trkAgente = null; // trkAgente: filtro de agente (null = todos)
 function periodoTracker(){
   const hoje = hojeISO(), ref = trkRef || hoje;
   if (trkPeriodo === "dia") return { filtro: d => d === ref, rotulo: ref === hoje ? "Hoje" : fmtDiaLongo(ref), ultimo: ref >= hoje };
@@ -684,11 +691,15 @@ function renderTracker(nome, eu){
   const salvas = Object.values(p.valorant.partidas || {}).map(m => ({ ...m, icone: agenteIcone(m.agenteId, m.agente), mapaImg: mapaImg(m.mapa, m.mapaId) }));
   const usaSalvas = salvas.length > 0, per = periodoTracker();
   const base = usaSalvas ? salvas.filter(m => per.filtro(m.dia)).sort((a, b) => (b.dia + b.hora).localeCompare(a.dia + a.hora)) : t.lista;
-  const fonte = usaSalvas ? `${base.length} ranqueadas · ${per.rotulo}` : `últimas ${t.lista.length} ranqueadas`;
-  const g = statsPartidas(base);
+  // Filtro de agente: tudo abaixo (contador, KDA, mapas, partidas) passa a ser só daquele agente.
+  const agentesJogados = Object.values(base.reduce((acc, m) => { const a = acc[m.agente || "?"] ||= { nome: m.agente || "?", icone: m.icone, n: 0 }; a.n++; return acc; }, {})).sort((x, y) => y.n - x.n);
+  if (trkAgente && !agentesJogados.some(a => a.nome === trkAgente)) trkAgente = null;
+  const sel = trkAgente ? base.filter(m => (m.agente || "?") === trkAgente) : base;
+  const fonte = (usaSalvas ? `${sel.length} ranqueadas · ${per.rotulo}` : `últimas ${sel.length} ranqueadas`) + (trkAgente ? ` · só ${trkAgente}` : "");
+  const g = statsPartidas(sel);
   const porAgente = Object.values(base.reduce((acc, m) => { (acc[m.agente || "?"] ||= { nome: m.agente || "?", icone: m.icone, lista: [] }).lista.push(m); return acc; }, {}))
     .map(a => ({ ...a, s: statsPartidas(a.lista) })).sort((x, y) => y.s.n - x.s.n || y.s.wr - x.s.wr);
-  const porMapa = Object.values(base.reduce((acc, m) => { (acc[m.mapa || "?"] ||= { nome: m.mapa || "?", img: mapaImg(m.mapa, m.mapaId), lista: [] }).lista.push(m); return acc; }, {}))
+  const porMapa = Object.values(sel.reduce((acc, m) => { (acc[m.mapa || "?"] ||= { nome: m.mapa || "?", img: mapaImg(m.mapa, m.mapaId), lista: [] }).lista.push(m); return acc; }, {}))
     .map(a => ({ ...a, s: statsPartidas(a.lista) })).sort((x, y) => y.s.n - x.s.n || y.s.wr - x.s.wr);
   return `
     <div class="trk-conta-top">🎯 <b>${esc(cfg.conta)}</b><span>${esc(REGIOES[cfg.regiao] || cfg.regiao)}</span>
@@ -697,6 +708,11 @@ function renderTracker(nome, eu){
     ${usaSalvas ? `<div class="card trk-per">
       <div class="trk-per-ops">${[["dia", "Dia"], ["semana", "Semana"], ["mes", "Mês"], ["ano", "Ano"], ["tudo", "Tudo"]].map(([k, n]) => `<button data-act="trk-per" data-p="${k}" class="${trkPeriodo === k ? "on" : ""}">${n}</button>`).join("")}</div>
       ${trkPeriodo !== "tudo" ? `<div class="trk-per-nav"><button class="nav" data-act="trk-nav" data-d="-1" title="Anterior">‹</button><b>${esc(per.rotulo)}</b><button class="nav" data-act="trk-nav" data-d="1" title="Próximo" ${per.ultimo ? "disabled" : ""}>›</button></div>` : `<div class="trk-per-nav"><b>Desde ${fmtDia(p.valorant.desde || inicioAno())}</b></div>`}
+    </div>` : ""}
+
+    ${agentesJogados.length > 1 || trkAgente ? `<div class="trk-agf">
+      <button data-act="trk-ag" data-ag="" class="${!trkAgente ? "on" : ""}">Todos os agentes</button>
+      ${agentesJogados.map(a => `<button data-act="trk-ag" data-ag="${esc(a.nome)}" class="${trkAgente === a.nome ? "on" : ""}" title="${a.n} partidas">${a.icone ? `<img src="${esc(a.icone)}" alt="" onerror="this.remove()">` : ""}${esc(a.nome)}<small>${a.n}</small></button>`).join("")}
     </div>` : ""}
 
     <div class="trk-cont">
@@ -730,7 +746,7 @@ function renderTracker(nome, eu){
 
     ${porAgente.length ? `<div class="card"><h2 style="margin-top:0">Por agente</h2><div class="scroll-x"><table class="trk-ag">
       <tr><th>Agente</th><th>Partidas</th><th>% Vitória</th><th>K / D / A médio</th><th>K/D</th><th>KDA</th><th>HS</th><th>ACS</th></tr>
-      ${porAgente.map(a => `<tr>
+      ${porAgente.map(a => `<tr class="clic ${trkAgente === a.nome ? "sel" : ""}" data-act="trk-ag" data-ag="${esc(trkAgente === a.nome ? "" : a.nome)}" title="Ver só ${esc(a.nome)}">
         <td><span class="agn">${a.icone ? `<img src="${esc(a.icone)}" alt="" onerror="this.remove()">` : ""}<b>${esc(a.nome)}</b></span></td>
         <td>${a.s.n}</td><td>${a.s.wr}%</td><td>${a.s.km} / ${a.s.dm} / ${a.s.am}</td>
         <td class="${+a.s.kd >= 1 ? "w" : "lo"}">${a.s.kd}</td><td>${a.s.kda}</td><td>${a.s.hs}%</td><td>${a.s.acs}</td></tr>`).join("")}
@@ -746,7 +762,7 @@ function renderTracker(nome, eu){
 
     <div class="card" style="margin-top:12px"><h2 style="margin-top:0">${usaSalvas ? `Partidas · ${esc(per.rotulo)}` : "Últimas partidas"}</h2>
       ${usaSalvas
-        ? (base.length ? `<div class="trk-partidas">${base.slice(0, 60).map(m => linhaPartida(m, `${fmtDia(m.dia).slice(0, 5)} ${m.hora || ""}`)).join("")}</div>${base.length > 60 ? `<p class="trk-nota" style="margin-top:8px">Mostrando as 60 mais recentes de ${base.length}.</p>` : ""}` : '<p class="empty">Nenhuma ranqueada neste período.</p>')
+        ? (sel.length ? `<div class="trk-partidas">${sel.slice(0, 60).map(m => linhaPartida(m, `${fmtDia(m.dia).slice(0, 5)} ${m.hora || ""}`)).join("")}</div>${sel.length > 60 ? `<p class="trk-nota" style="margin-top:8px">Mostrando as 60 mais recentes de ${sel.length}.</p>` : ""}` : '<p class="empty">Nenhuma ranqueada neste período.</p>')
         : (t.lista.length ? `<div class="trk-partidas">${t.lista.map(m => linhaPartida({ ...m, icone: agenteIcone("", m.agente) || m.icone, mapaImg: mapaImg(m.mapa) }, quando(m.quando))).join("")}</div>` : '<p class="empty">Nenhuma partida competitiva recente.</p>')}
     </div>`;
 }
@@ -1057,6 +1073,7 @@ document.addEventListener("click", async e => {
     if (act === "sync") { b.disabled = true; b.textContent = "Sincronizando..."; const n = await sincronizarRanqueadas(b.dataset.nome); render(); toast(n ? `+${n} ranqueadas novas do tracker` : "Tudo em dia com o tracker."); }
     if (act === "trk-recarregar") { carregarTracker(b.dataset.nome, true); render(); }
     if (act === "trk-per") { trkPeriodo = b.dataset.p; trkRef = null; render(); }
+    if (act === "trk-ag") { trkAgente = b.dataset.ag || null; render(); }
     if (act === "trk-nav") { moverPeriodo(+b.dataset.d); render(); }
     if (act === "editar") abrirPerfilDlg(b.dataset.nome, true);
     if (act === "editar-conta") abrirPerfilDlg(b.dataset.nome, "conta");
