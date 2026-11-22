@@ -9428,6 +9428,21 @@
             "a": 3,
             "hs": 29,
             "acs": 235
+          },
+          "4b5649f5-721d-4f74-bb82-b8f1a4d17833": {
+            "dia": "2026-11-22",
+            "hora": "14:58",
+            "resultado": "V",
+            "placar": "13-3",
+            "mapa": "Abyss",
+            "agente": "Waylay",
+            "agenteId": "df1cb487-4902-002e-5c17-d28e83e78588",
+            "mapaId": "224b0a95-48b9-f703-1bd8-67aca101a61f",
+            "k": 14,
+            "d": 8,
+            "a": 3,
+            "hs": 32,
+            "acs": 234
           }
         }
       }
