@@ -32,13 +32,14 @@ MAX_BODY = 8 * 1024 * 1024
 def load() -> dict:
     data = json.loads(DB.read_text(encoding="utf-8")) if DB.exists() else {}
     data.setdefault("perfis", {})
+    data.setdefault("jogos", {})
     for p in data["perfis"].values():
         p.setdefault("foto", "")
         p.setdefault("pin", "0000")
         p.setdefault("elo", "")
         p.setdefault("favoritos", [])
         p.setdefault("partidas", {})
-        for j in JOGOS:
+        for j in list(JOGOS) + list(data["jogos"]):
             p["partidas"].setdefault(j, {})
     return data
 
@@ -51,7 +52,8 @@ def save(data: dict) -> None:
 
 def publico(data: dict) -> dict:
     """Mesmo conteúdo, sem os PINs."""
-    return {"perfis": {n: {k: v for k, v in p.items() if k != "pin"} for n, p in data["perfis"].items()}}
+    return {"jogos": data.get("jogos", {}),
+            "perfis": {n: {k: v for k, v in p.items() if k != "pin"} for n, p in data["perfis"].items()}}
 
 
 # ------------------------------------------------------------------ helpers
@@ -126,7 +128,7 @@ def apply(data: dict, o: dict) -> dict:
             "pin": pin,
             "elo": elo_valido(o.get("elo")),
             "favoritos": [],
-            "partidas": {j: {} for j in JOGOS},
+            "partidas": {j: {} for j in list(JOGOS) + list(data["jogos"])},
         }
         return {"nome": nome}
 
@@ -156,6 +158,30 @@ def apply(data: dict, o: dict) -> dict:
         if o.get("elo") and o["elo"] in ELOS:  # elo direto do tracker
             p["elo"] = o["elo"]
         return {"nome": nome}
+
+    if op in ("jogo_criar", "jogo_editar"):  # jogos e cores (precisa estar logado)
+        autenticar(data, o)
+        jogos = data["jogos"]
+        icone = (str(o.get("icone") or "🎮").strip()[:4]) or "🎮"
+        cor = o.get("cor")
+        if cor and not re.match(r"^#[0-9a-fA-F]{6}$", str(cor)):
+            raise ValueError("Cor inválida.")
+        if op == "jogo_criar":
+            nome_j = str(o.get("jogoNome") or "").strip()
+            if not nome_j or len(nome_j) > 20:
+                raise ValueError("Nome do jogo: de 1 a 20 caracteres.")
+            jid = slug(nome_j)
+            if jid in JOGOS or jid in jogos:
+                raise ValueError("Esse jogo já existe.")
+            jogos[jid] = {"nome": nome_j, "icone": icone, "cor": cor or "#7c5cff"}
+            for q in perfis.values():
+                q.setdefault("partidas", {}).setdefault(jid, {})
+            return {"nome": jid}
+        jid = o.get("id")
+        if jid not in JOGOS and jid not in jogos:
+            raise ValueError("Jogo não encontrado.")
+        jogos[jid] = {**jogos.get(jid, {}), "icone": icone, **({"cor": cor} if cor else {})}
+        return {"nome": jid}
 
     nome = autenticar(data, o)
     p = perfis[nome]
@@ -194,7 +220,7 @@ def apply(data: dict, o: dict) -> dict:
 
     elif op == "registrar":
         jogo = o.get("jogo")
-        if jogo not in JOGOS:
+        if jogo not in JOGOS and jogo not in data["jogos"]:
             raise ValueError("Jogo inválido.")
         g, d = inteiro(o.get("ganhou"), "Ganhou"), inteiro(o.get("perdeu"), "Perdeu")
         if not g and not d:
