@@ -1878,6 +1878,21 @@
             "a": 1,
             "hs": 51,
             "acs": 208
+          },
+          "361a9fd7-2eae-4b7a-9e55-8227b21674ab": {
+            "dia": "2026-11-22",
+            "hora": "20:18",
+            "resultado": "D",
+            "placar": "12-14",
+            "mapa": "Lotus",
+            "agente": "Jett",
+            "agenteId": "add6443a-41bd-e414-f6ad-e58d267f4e95",
+            "mapaId": "2fe4ed3a-450a-948b-6d6b-e89a78e680a9",
+            "k": 14,
+            "d": 20,
+            "a": 5,
+            "hs": 18,
+            "acs": 148
           }
         }
       }
