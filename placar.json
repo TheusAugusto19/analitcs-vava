@@ -9383,6 +9383,21 @@
             "a": 4,
             "hs": 26,
             "acs": 328
+          },
+          "f74b417c-034b-4f0b-a3ff-239f892449ae": {
+            "dia": "2026-11-22",
+            "hora": "12:34",
+            "resultado": "V",
+            "placar": "13-11",
+            "mapa": "Corrode",
+            "agente": "Waylay",
+            "agenteId": "df1cb487-4902-002e-5c17-d28e83e78588",
+            "mapaId": "1c18ab1f-420d-0d8b-71d0-77ad3c439115",
+            "k": 21,
+            "d": 15,
+            "a": 3,
+            "hs": 29,
+            "acs": 235
           }
         }
       }
