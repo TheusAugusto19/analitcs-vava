@@ -140,9 +140,11 @@ def apply(data: dict, o: dict) -> dict:
             p["partidas"]["valorant"] = {}
             v["migrado"] = True
         v.setdefault("partidas", {})
+        if re.match(r"^\d{4}-\d{2}-\d{2}$", str(o.get("desde") or "")) and o["desde"] < v.get("desde", "9"):
+            v["desde"] = o["desde"]
         txt = lambda x, n: str(x if x is not None else "")[:n]
         num = lambda x: max(0, min(9999, round(float(x or 0))))
-        for m in (o.get("partidas") or [])[:300]:
+        for m in (o.get("partidas") or [])[:500]:
             if not isinstance(m, dict) or not isinstance(m.get("id"), str) or not m["id"] or len(m["id"]) > 64 or m["id"] in v["partidas"]:
                 continue
             if not re.match(r"^\d{4}-\d{2}-\d{2}$", str(m.get("dia"))) or m["dia"] < v.get("desde", "") or m.get("resultado") not in ("V", "D", "E"):
@@ -174,7 +176,7 @@ def apply(data: dict, o: dict) -> dict:
                     raise ValueError("Região inválida.")
                 antigo = p.get("valorant") or {}
                 p["valorant"] = {**antigo, "conta": str(v["conta"]), "regiao": v["regiao"],
-                                 "desde": antigo.get("desde") or date.today().replace(day=1).isoformat()}
+                                 "desde": antigo.get("desde") or date.today().replace(month=1, day=1).isoformat()}
         if o.get("novoPin"):
             if not PIN.match(str(o["novoPin"])):
                 raise ValueError("PIN precisa ter 4 números.")

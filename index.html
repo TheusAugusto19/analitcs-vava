@@ -224,6 +224,20 @@
   .trk-kpis small{color:var(--muted);font-size:12px}
   .trk-nota{color:var(--muted);font-size:12px;margin:-6px 0 12px}
   .scroll-x{overflow-x:auto}
+  .trk-cont{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+  .trk-cont .card{padding:16px 18px}
+  .trk-cont span{display:block;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .trk-cont b{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:56px;line-height:1;font-weight:400}
+  .trk-cont .w b{color:var(--win)} .trk-cont .lo b{color:var(--loss)} .trk-cont .p b{color:var(--accent)}
+  @media (max-width:760px){ .trk-cont{grid-template-columns:repeat(2,1fr)} }
+  .trk-per{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding:14px 16px}
+  .trk-per-ops{display:flex;gap:4px;padding:4px;border-radius:12px;background:var(--panel2)}
+  .trk-per-ops button{padding:7px 14px;border-radius:9px;font-weight:700;color:var(--text);opacity:.75}
+  .trk-per-ops button:hover{opacity:1}
+  .trk-per-ops button.on{background:var(--accent);color:var(--on-accent);opacity:1}
+  .trk-per-nav{display:flex;align-items:center;gap:10px}
+  .trk-per-nav b{min-width:150px;text-align:center;text-transform:capitalize}
+  .trk-per-nav .nav{width:34px;height:34px;font-size:16px}
   .trk-partida{background-size:cover;background-position:center right}
   .trk-mp img.mp{width:72px;height:30px;border-radius:6px;object-fit:cover}
   .trk-tag{cursor:pointer;color:var(--text)} .trk-tag:disabled{cursor:default}
@@ -627,6 +641,23 @@ function formContaValorant(cfg){
   </form>`;
 }
 
+/* Período do tracker: dia | semana | mes | ano | tudo, a partir de uma data de referência. */
+let trkPeriodo = "mes", trkRef = null;
+function periodoTracker(){
+  const hoje = hojeISO(), ref = trkRef || hoje;
+  if (trkPeriodo === "dia") return { filtro: d => d === ref, rotulo: ref === hoje ? "Hoje" : fmtDiaLongo(ref), ultimo: ref >= hoje };
+  if (trkPeriodo === "semana") { const a = inicioSemana(ref), b = fimSemana(ref); return { filtro: d => d >= a && d <= b, rotulo: `${fmtDia(a).slice(0, 5)} a ${fmtDia(b).slice(0, 5)}`, ultimo: b >= hoje }; }
+  if (trkPeriodo === "mes") { const m = ref.slice(0, 7); return { filtro: d => d.startsWith(m), rotulo: fmtMesLongo(m), ultimo: m >= hoje.slice(0, 7) }; }
+  if (trkPeriodo === "ano") { const y = ref.slice(0, 4); return { filtro: d => d.startsWith(y), rotulo: y, ultimo: y >= hoje.slice(0, 4) }; }
+  return { filtro: () => true, rotulo: "tudo", ultimo: true };
+}
+function moverPeriodo(n){
+  const ref = trkRef || hojeISO();
+  trkRef = trkPeriodo === "dia" ? somarDias(ref, n) : trkPeriodo === "semana" ? somarDias(ref, 7 * n)
+    : trkPeriodo === "mes" ? somarMeses(ref.slice(0, 7), n) + "-01" : `${+ref.slice(0, 4) + n}-01-01`;
+  if (trkRef > hojeISO()) trkRef = hojeISO();
+}
+
 function statsPartidas(lista){
   const n = lista.length, s = k => lista.reduce((a, m) => a + (+m[k] || 0), 0), med = k => n ? (s(k) / n).toFixed(1) : "0";
   const v = lista.filter(m => m.resultado === "V").length, dd = lista.filter(m => m.resultado === "D").length;
@@ -646,15 +677,37 @@ function renderTracker(nome, eu){
   const t = c.dados, eloAtual = tierParaElo(t.tier), eloPico = tierParaElo(t.pico);
   const quando = ms => ms ? new Date(ms).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "";
   // Base das estatísticas: as ranqueadas do mês salvas no JSON (mais completas); sem elas, as últimas da API.
-  const doMes = Object.values(p.valorant.partidas || {}).map(m => ({ ...m, icone: agenteIcone(m.agenteId, m.agente) }));
-  const usaMes = doMes.length >= t.lista.length && doMes.length > 0, base = usaMes ? doMes : t.lista;
-  const fonte = usaMes ? `${doMes.length} ranqueadas desde ${fmtDia(p.valorant.desde || inicioMes())}` : `últimas ${t.lista.length} ranqueadas`;
+  // Base: ranqueadas salvas no JSON, filtradas pelo período escolhido. Sem nenhuma salva, usa as últimas da API.
+  const salvas = Object.values(p.valorant.partidas || {}).map(m => ({ ...m, icone: agenteIcone(m.agenteId, m.agente), mapaImg: mapaImg(m.mapa, m.mapaId) }));
+  const usaSalvas = salvas.length > 0, per = periodoTracker();
+  const base = usaSalvas ? salvas.filter(m => per.filtro(m.dia)).sort((a, b) => (b.dia + b.hora).localeCompare(a.dia + a.hora)) : t.lista;
+  const fonte = usaSalvas ? `${base.length} ranqueadas · ${per.rotulo}` : `últimas ${t.lista.length} ranqueadas`;
   const g = statsPartidas(base);
   const porAgente = Object.values(base.reduce((acc, m) => { (acc[m.agente || "?"] ||= { nome: m.agente || "?", icone: m.icone, lista: [] }).lista.push(m); return acc; }, {}))
     .map(a => ({ ...a, s: statsPartidas(a.lista) })).sort((x, y) => y.s.n - x.s.n || y.s.wr - x.s.wr);
   const porMapa = Object.values(base.reduce((acc, m) => { (acc[m.mapa || "?"] ||= { nome: m.mapa || "?", img: mapaImg(m.mapa, m.mapaId), lista: [] }).lista.push(m); return acc; }, {}))
     .map(a => ({ ...a, s: statsPartidas(a.lista) })).sort((x, y) => y.s.n - x.s.n || y.s.wr - x.s.wr);
   return `
+    ${usaSalvas ? `<div class="card trk-per">
+      <div class="trk-per-ops">${[["dia", "Dia"], ["semana", "Semana"], ["mes", "Mês"], ["ano", "Ano"], ["tudo", "Tudo"]].map(([k, n]) => `<button data-act="trk-per" data-p="${k}" class="${trkPeriodo === k ? "on" : ""}">${n}</button>`).join("")}</div>
+      ${trkPeriodo !== "tudo" ? `<div class="trk-per-nav"><button class="nav" data-act="trk-nav" data-d="-1" title="Anterior">‹</button><b>${esc(per.rotulo)}</b><button class="nav" data-act="trk-nav" data-d="1" title="Próximo" ${per.ultimo ? "disabled" : ""}>›</button></div>` : `<div class="trk-per-nav"><b>Desde ${fmtDia(p.valorant.desde || inicioAno())}</b></div>`}
+    </div>` : ""}
+
+    <div class="trk-cont">
+      <div class="card"><span>Partidas</span><b>${g.n}</b></div>
+      <div class="card w"><span>Ganhou</span><b>${g.v}</b></div>
+      <div class="card lo"><span>Perdeu</span><b>${g.dd}</b></div>
+      <div class="card p"><span>% Vitória</span><b>${g.n ? g.wr + "%" : "—"}</b></div>
+    </div>
+
+    <div class="kpis trk-kpis">
+      <div class="card kpi p"><div class="l">ACS médio</div><div class="v">${g.acs}</div><small>${g.n} partidas</small></div>
+      <div class="card kpi"><div class="l">K / D / A médio</div><div class="v">${g.km}/${g.dm}/${g.am}</div><small>Total ${g.k}/${g.d}/${g.a}</small></div>
+      <div class="card kpi"><div class="l">K/D</div><div class="v">${g.kd}</div><small>KDA ${g.kda}</small></div>
+      <div class="card kpi w"><div class="l">Headshot</div><div class="v">${g.hs}%</div><small>média por partida</small></div>
+    </div>
+    <p class="trk-nota">Estatísticas de ${esc(fonte)}.</p>
+
     <div class="trk-head" style="${t.card ? `background-image:linear-gradient(90deg,rgba(var(--head),.92) 30%,rgba(var(--head),.35)),url('${esc(t.card)}')` : ""}">
       ${t.cardP ? `<img class="trk-cardp" src="${esc(t.cardP)}" alt="">` : ""}
       <div><div class="trk-riot">${esc(t.nome)}<span>#${esc(t.tag)}</span></div>
@@ -668,13 +721,6 @@ function renderTracker(nome, eu){
       <div class="card trk-rank">${elo(eloPico, 72)}<div><div class="l">Pico</div><div class="trk-rank-n">${esc(eloPico || "—")}</div><small>${esc(t.picoTemp)}</small></div></div>
     </div>
 
-    <div class="kpis trk-kpis">
-      <div class="card kpi p"><div class="l">% Vitória</div><div class="v">${g.wr}%</div><small>${g.v}V · ${g.dd}D em ${g.n}</small></div>
-      <div class="card kpi"><div class="l">K / D / A médio</div><div class="v">${g.km}/${g.dm}/${g.am}</div><small>Total ${g.k}/${g.d}/${g.a}</small></div>
-      <div class="card kpi"><div class="l">K/D</div><div class="v">${g.kd}</div><small>KDA ${g.kda}</small></div>
-      <div class="card kpi w"><div class="l">Headshot</div><div class="v">${g.hs}%</div><small>ACS médio ${g.acs}</small></div>
-    </div>
-    <p class="trk-nota">Estatísticas de ${esc(fonte)}.</p>
 
     ${porAgente.length ? `<div class="card"><h2 style="margin-top:0">Por agente</h2><div class="scroll-x"><table class="trk-ag">
       <tr><th>Agente</th><th>Partidas</th><th>% Vitória</th><th>K / D / A médio</th><th>K/D</th><th>KDA</th><th>HS</th><th>ACS</th></tr>
@@ -692,8 +738,10 @@ function renderTracker(nome, eu){
         <td>${a.s.kd}</td><td>${a.s.hs}%</td><td>${a.s.acs}</td></tr>`).join("")}
     </table></div></div>` : ""}
 
-    <div class="card" style="margin-top:12px"><h2 style="margin-top:0">Últimas partidas</h2>
-      ${t.lista.length ? `<div class="trk-partidas">${t.lista.map(m => linhaPartida({ ...m, icone: agenteIcone("", m.agente) || m.icone, mapaImg: mapaImg(m.mapa) }, quando(m.quando))).join("")}</div>` : '<p class="empty">Nenhuma partida competitiva recente.</p>'}
+    <div class="card" style="margin-top:12px"><h2 style="margin-top:0">${usaSalvas ? `Partidas · ${esc(per.rotulo)}` : "Últimas partidas"}</h2>
+      ${usaSalvas
+        ? (base.length ? `<div class="trk-partidas">${base.slice(0, 60).map(m => linhaPartida(m, `${fmtDia(m.dia).slice(0, 5)} ${m.hora || ""}`)).join("")}</div>${base.length > 60 ? `<p class="trk-nota" style="margin-top:8px">Mostrando as 60 mais recentes de ${base.length}.</p>` : ""}` : '<p class="empty">Nenhuma ranqueada neste período.</p>')
+        : (t.lista.length ? `<div class="trk-partidas">${t.lista.map(m => linhaPartida({ ...m, icone: agenteIcone("", m.agente) || m.icone, mapaImg: mapaImg(m.mapa) }, quando(m.quando))).join("")}</div>` : '<p class="empty">Nenhuma partida competitiva recente.</p>')}
     </div>
     ${trocar}`;
 }
@@ -810,6 +858,7 @@ function renderContador(nome, eu){
 
 /* ---------------------------------------------------------- Sincronização das ranqueadas (tracker -> placar.json) */
 const inicioMes = () => hojeISO().slice(0, 7) + "-01";
+const inicioAno = () => hojeISO().slice(0, 4) + "-01-01";
 function partidaDoTracker(m){
   const st = m.stats || {}, meta = m.meta || {}, ini = new Date(meta.started_at || 0);
   if (!meta.id || isNaN(ini)) return null;
@@ -821,15 +870,21 @@ function partidaDoTracker(m){
     resultado: a > b ? "V" : a < b ? "D" : "E", placar: `${a}-${b}`, mapa: meta.map?.name || "", agente: st.character?.name || "", agenteId: st.character?.id || "", mapaId: meta.map?.id || "",
     k: st.kills || 0, d: st.deaths || 0, a: st.assists || 0, hs: tiros ? Math.round((sh.head || 0) / tiros * 100) : 0, acs: Math.round((st.score || 0) / rounds) };
 }
-async function buscarRanqueadas(cfg){
-  const [n, t] = cfg.conta.split("#"), q = `${encodeURIComponent(n)}/${encodeURIComponent(t)}`, reg = cfg.regiao || "br", desde = cfg.desde || inicioMes();
-  const out = [];
-  for (let page = 1; page <= 8; page++) {
+/* Busca as ranqueadas do ano. Para quando chega no começo do ano ou numa página que já está toda salva. */
+async function buscarRanqueadas(cfg, desde){
+  const [n, t] = cfg.conta.split("#"), q = `${encodeURIComponent(n)}/${encodeURIComponent(t)}`, reg = cfg.regiao || "br";
+  const ja = cfg.partidas || {}, completo = (cfg.desde || "9") <= desde, out = [];
+  for (let page = 1; page <= 20; page++) {
     const lista = await henrik(`v1/stored-matches/${reg}/${q}?mode=competitive&page=${page}&size=25`);
     if (!Array.isArray(lista) || !lista.length) break;
-    let antigas = false;
-    for (const m of lista) { const x = partidaDoTracker(m); if (!x) continue; if (x.dia < desde) { antigas = true; continue; } out.push(x); }
-    if (antigas || lista.length < 25) break;
+    let antigas = false, novasNaPagina = 0;
+    for (const m of lista) {
+      const x = partidaDoTracker(m); if (!x) continue;
+      if (x.dia < desde) { antigas = true; continue; }
+      if (!ja[x.id]) novasNaPagina++;
+      out.push(x);
+    }
+    if (antigas || lista.length < 25 || (completo && !novasNaPagina)) break;
   }
   return out;
 }
@@ -840,10 +895,11 @@ async function sincronizarRanqueadas(nomePerfil){
   if (!v?.conta || sincronizando.has(nomePerfil)) return 0;
   sincronizando.add(nomePerfil);
   try {
-    const ja = v.partidas || {}, novas = (await buscarRanqueadas(v)).filter(m => !ja[m.id]);
+    const desde = inicioAno(), ja = v.partidas || {}, novas = (await buscarRanqueadas(v, desde)).filter(m => !ja[m.id]);
+    const ampliar = (v.desde || "9") > desde;
     const elo = await eloDoTracker(v), eloMudou = elo && elo !== db.perfis[nomePerfil].elo;
-    if (!novas.length && v.migrado && !eloMudou) return 0;
-    await acao({ op: "valorant_sync", nome: nomePerfil, partidas: novas.slice(0, 300), ...(eloMudou ? { elo } : {}) });
+    if (!novas.length && v.migrado && !eloMudou && !ampliar) return 0;
+    await acao({ op: "valorant_sync", nome: nomePerfil, partidas: novas.slice(0, 500), desde, ...(eloMudou ? { elo } : {}) });
     render();
     return novas.length;
   } finally { sincronizando.delete(nomePerfil); }
@@ -994,6 +1050,8 @@ document.addEventListener("click", async e => {
     if (act === "mes-sel") { mesSel = b.dataset.mes; render(); }
     if (act === "sync") { b.disabled = true; b.textContent = "Sincronizando..."; const n = await sincronizarRanqueadas(b.dataset.nome); render(); toast(n ? `+${n} ranqueadas novas do tracker` : "Tudo em dia com o tracker."); }
     if (act === "trk-recarregar") { carregarTracker(b.dataset.nome, true); render(); }
+    if (act === "trk-per") { trkPeriodo = b.dataset.p; trkRef = null; render(); }
+    if (act === "trk-nav") { moverPeriodo(+b.dataset.d); render(); }
     if (act === "editar") abrirPerfilDlg(b.dataset.nome, true);
     if (act === "editar-conta") abrirPerfilDlg(b.dataset.nome, "conta");
     if (act === "fechar") $("perfilDlg").close();
@@ -1037,8 +1095,8 @@ document.addEventListener("submit", async e => {
       const conta = $("contaRiot").value.trim().replace(/\s*#\s*/, "#"), regiao = $("contaRegiao").value;
       if (!CONTA_RE.test(conta)) throw new Error("Use o formato Nome#TAG, por exemplo Lopes#BR1.");
       await acao(comPin({ op: "perfil_editar", valorant: { conta, regiao } }));
-      render(); toast("Conta do Valorant salva! Puxando as ranqueadas do mês...");
-      sincronizarRanqueadas(sessao.nome).then(n => { render(); if (n) toast(`+${n} ranqueadas do mês importadas`); }).catch(e => toast(e.message, 1));
+      render(); toast("Conta do Valorant salva! Puxando as ranqueadas do ano...");
+      sincronizarRanqueadas(sessao.nome).then(n => { render(); if (n) toast(`+${n} ranqueadas do ano importadas`); }).catch(e => toast(e.message, 1));
     }
     if (f.id === "regForm") {
       const g = parseInt($("regG").value || 0, 10), p = parseInt($("regP").value || 0, 10);
@@ -1146,8 +1204,9 @@ function aplicar(data, o){
     if (!v?.conta) throw new Error("Esse perfil não tem conta do Valorant.");
     if (!v.migrado) { p.partidas.valorant = {}; v.migrado = true; } // o contador do Valorant passa a vir só do tracker
     v.partidas ||= {};
+    if (/^\d{4}-\d{2}-\d{2}$/.test(o.desde || "") && o.desde < (v.desde || "9")) v.desde = o.desde; // amplia o período (ex.: ano inteiro)
     const txt = (x, n) => String(x ?? "").slice(0, n), num = x => Math.max(0, Math.min(9999, Math.round(+x || 0)));
-    for (const m of (o.partidas || []).slice(0, 300)) {
+    for (const m of (o.partidas || []).slice(0, 500)) {
       if (!m || typeof m.id !== "string" || !m.id || m.id.length > 64 || v.partidas[m.id]) continue;
       if (!/^\d{4}-\d{2}-\d{2}$/.test(m.dia) || m.dia < (v.desde || "") || !["V", "D", "E"].includes(m.resultado)) continue;
       v.partidas[m.id] = { dia: m.dia, hora: txt(m.hora, 5), resultado: m.resultado, placar: txt(m.placar, 7), mapa: txt(m.mapa, 20),
@@ -1166,7 +1225,7 @@ function aplicar(data, o){
       else {
         if (!/^[^#]{3,16}#[A-Za-z0-9]{2,5}$/.test(v.conta)) throw new Error("Use o formato Nome#TAG.");
         if (!["br", "latam", "na", "eu", "ap", "kr"].includes(v.regiao)) throw new Error("Região inválida.");
-        p.valorant = { ...(p.valorant || {}), conta: v.conta, regiao: v.regiao, desde: p.valorant?.desde || (hojeISO().slice(0, 7) + "-01") };
+        p.valorant = { ...(p.valorant || {}), conta: v.conta, regiao: v.regiao, desde: p.valorant?.desde || (hojeISO().slice(0, 4) + "-01-01") };
       }
     }
     if (o.novoPin) { if (!/^\d{4}$/.test(o.novoPin)) throw new Error("PIN precisa ter 4 números."); p.pin = o.novoPin; }
