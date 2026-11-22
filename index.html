@@ -15,11 +15,23 @@
     --bg:#0a0c12; --panel:#131722; --panel2:#181d2b; --line:#252c3f; --text:#e9ecf5; --muted:#8a93ab;
     --win:#3ddc97; --loss:#ff5c6c; --gold:#ffd166;
     --accent:#ff4655; --on-accent:#fff;
+    --topbar:rgba(10,12,18,.82); --side:rgba(19,23,34,.96); --fade:24,29,43; --head:10,12,18; color-scheme:dark;
   }
   body[data-jogo="valorant"] {--accent:#ff4655; --on-accent:#fff}
   body[data-jogo="minecraft"]{--accent:#62c13f; --on-accent:#0a0c12}
   body[data-jogo="cs"]       {--accent:#f5a524; --on-accent:#0a0c12}
   body[data-jogo="xadrez"]   {--accent:#e8e8e8; --on-accent:#0a0c12}
+  /* Modo claro */
+  :root[data-tema="claro"]{
+    --bg:#f3f4f8; --panel:#ffffff; --panel2:#eef0f5; --line:#d9dde7; --text:#151925; --muted:#5d667c;
+    --win:#0f9a60; --loss:#e0384c; --gold:#a87700;
+    --topbar:rgba(243,244,248,.88); --side:rgba(255,255,255,.97); --fade:238,240,245; --head:255,255,255; color-scheme:light;
+  }
+  :root[data-tema="claro"] body[data-jogo="minecraft"]{--accent:#3f9b27; --on-accent:#fff}
+  :root[data-tema="claro"] body[data-jogo="cs"]{--accent:#d98608; --on-accent:#fff}
+  :root[data-tema="claro"] body[data-jogo="xadrez"]{--accent:#2b303c; --on-accent:#fff}
+  :root[data-tema="claro"] .side{box-shadow:0 20px 50px -25px rgba(20,25,40,.35)}
+  :root[data-tema="claro"] .pdlg::backdrop{background:rgba(30,35,50,.45)}
 
   *{box-sizing:border-box;margin:0;padding:0}
   body{
@@ -33,7 +45,7 @@
 
   /* ---------- topo ---------- */
   .topbar{position:sticky;top:0;z-index:20;display:flex;gap:16px;align-items:center;flex-wrap:wrap;
-    padding:14px 24px;background:rgba(10,12,18,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+    padding:14px 24px;background:var(--topbar);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
   .brand{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-size:28px;letter-spacing:1.5px;white-space:nowrap}
   .brand i{font-style:normal;color:var(--accent)}
   .search{flex:1;min-width:200px;max-width:420px;position:relative}
@@ -41,9 +53,11 @@
   .search input:focus{border-color:var(--accent)}
   .search span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
   .jogos{display:flex;gap:6px;flex-wrap:wrap}
-  .jogos button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-weight:600;font-size:14px;transition:.2s}
-  .jogos button:hover{color:var(--text)}
-  .jogos button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+  .jogos button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:600;font-size:14px;transition:.2s}
+  .jogos button:hover{border-color:var(--accent)}
+  .jogos button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:800;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 28%,transparent),0 6px 18px -6px var(--accent)}
+  .tema{width:40px;height:40px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:18px;margin-left:auto}
+  .tema:hover{border-color:var(--accent)}
 
   .banner{margin:16px 24px 0;padding:10px 16px;border-radius:12px;background:color-mix(in srgb,var(--gold) 14%,transparent);border:1px solid color-mix(in srgb,var(--gold) 40%,transparent);color:var(--gold);font-size:13px}
   main{padding:24px;margin-right:420px;max-width:1200px}
@@ -141,7 +155,7 @@
   .pbar div{height:100%;background:var(--win)}
 
   /* ---------- barra lateral ---------- */
-  .side{position:fixed;top:84px;right:16px;width:390px;z-index:30;background:rgba(19,23,34,.96);backdrop-filter:blur(10px);
+  .side{position:fixed;top:84px;right:16px;width:390px;z-index:30;background:var(--side);backdrop-filter:blur(10px);
     border:1px solid var(--line);border-radius:18px;box-shadow:0 20px 60px -20px #000;display:flex;flex-direction:column;max-height:calc(100vh - 100px)}
   .side-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);cursor:grab;user-select:none;touch-action:none}
   .side-head:active{cursor:grabbing}
@@ -186,9 +200,10 @@
   .ghok{font-size:13px;color:var(--win);line-height:1.6}
   .ghok code{color:var(--text)} .ghok button{color:var(--muted);text-decoration:underline;margin-left:4px}
   .btn:disabled{opacity:.6;cursor:wait}
-  .abas{display:inline-flex;gap:4px;padding:4px;border-radius:14px;background:var(--panel);border:1px solid var(--line);margin-bottom:16px}
-  .abas button{padding:9px 18px;border-radius:10px;font-weight:700;color:var(--muted)}
-  .abas button.on{background:var(--accent);color:var(--on-accent)}
+  .abas{display:flex;width:fit-content;gap:4px;padding:4px;border-radius:14px;background:var(--panel);border:1px solid var(--line);margin-bottom:16px}
+  .abas button{padding:9px 18px;border-radius:10px;font-weight:700;color:var(--text);opacity:.75}
+  .abas button:hover{opacity:1}
+  .abas button.on{background:var(--accent);color:var(--on-accent);opacity:1;box-shadow:0 6px 18px -6px var(--accent)}
   .trk-conta h3{font-size:15px;margin-bottom:12px}
   .trk-conta-row{display:grid;grid-template-columns:1fr 170px auto;gap:10px}
   .trk-conta small{display:block;color:var(--muted);font-size:12px;margin-top:8px}
@@ -276,6 +291,7 @@
   <div class="brand"><i>◆</i> Analytics de Partidas</div>
   <label class="search"><span>⌕</span><input id="busca" type="search" placeholder="Pesquisar nomes..." autocomplete="off"></label>
   <nav class="jogos" id="jogos"></nav>
+  <button class="tema" id="temaBtn" title="Trocar entre modo claro e escuro"></button>
 </header>
 <div class="banner" id="banner" hidden></div>
 <main id="main"></main>
@@ -343,6 +359,15 @@ async function carregarAssets(){
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store = { get(k, d){ try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+/* Tema claro/escuro (fica salvo neste navegador). */
+function aplicarTema(t){
+  document.documentElement.dataset.tema = t;
+  const b = document.getElementById("temaBtn"); if (b) b.textContent = t === "claro" ? "🌙" : "☀️";
+  try { localStorage.setItem("tema", JSON.stringify(t)); } catch {}
+}
+aplicarTema((() => { try { return JSON.parse(localStorage.getItem("tema")) || "escuro"; } catch { return "escuro"; } })());
+document.getElementById("temaBtn").addEventListener("click", () => aplicarTema(document.documentElement.dataset.tema === "claro" ? "escuro" : "claro"));
 
 let backend, db = { perfis:{} }, lastText = "", leitura = false;
 let jogo = JOGOS[store.get("jogo")] ? store.get("jogo") : "valorant";
@@ -630,7 +655,7 @@ function renderTracker(nome, eu){
   const porMapa = Object.values(base.reduce((acc, m) => { (acc[m.mapa || "?"] ||= { nome: m.mapa || "?", img: mapaImg(m.mapa, m.mapaId), lista: [] }).lista.push(m); return acc; }, {}))
     .map(a => ({ ...a, s: statsPartidas(a.lista) })).sort((x, y) => y.s.n - x.s.n || y.s.wr - x.s.wr);
   return `
-    <div class="trk-head" style="${t.card ? `background-image:linear-gradient(90deg,rgba(10,12,18,.92) 30%,rgba(10,12,18,.35)),url('${esc(t.card)}')` : ""}">
+    <div class="trk-head" style="${t.card ? `background-image:linear-gradient(90deg,rgba(var(--head),.92) 30%,rgba(var(--head),.35)),url('${esc(t.card)}')` : ""}">
       ${t.cardP ? `<img class="trk-cardp" src="${esc(t.cardP)}" alt="">` : ""}
       <div><div class="trk-riot">${esc(t.nome)}<span>#${esc(t.tag)}</span></div>
         <div class="tags"><span class="tag">Nível ${t.nivel ?? "?"}</span><span class="tag">${esc(REGIOES[cfg.regiao] || cfg.regiao)}</span>
@@ -676,7 +701,7 @@ function renderTracker(nome, eu){
 
 /* ---------------------------------------------------------- Contador (dia em destaque) */
 let diaSel = null, mesSel = null;
-const linhaPartida = (m, sub) => `<div class="trk-partida ${m.resultado}"${m.mapaImg ? ` style="background-image:linear-gradient(90deg,var(--panel2) 40%,rgba(24,29,43,.5) 62%,rgba(24,29,43,.92) 88%),url('${esc(m.mapaImg)}')"` : ""}>
+const linhaPartida = (m, sub) => `<div class="trk-partida ${m.resultado}"${m.mapaImg ? ` style="background-image:linear-gradient(90deg,var(--panel2) 40%,rgba(var(--fade),.5) 62%,rgba(var(--fade),.92) 88%),url('${esc(m.mapaImg)}')"` : ""}>
   <span class="res">${m.resultado === "V" ? "Vitória" : m.resultado === "D" ? "Derrota" : "Empate"}</span>
   <span class="ag">${m.icone ? `<img src="${esc(m.icone)}" alt="" title="${esc(m.agente)}" onerror="this.remove()">` : ""}</span>
   <span class="mapa"><b>${esc(m.mapa || "?")}</b><small>${esc(m.agente || "")}${sub ? " · " + esc(sub) : ""}</small></span>
