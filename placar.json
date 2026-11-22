@@ -1848,6 +1848,21 @@
             "a": 3,
             "hs": 36,
             "acs": 251
+          },
+          "d052efa2-cfc3-486d-a13d-534a52826cfd": {
+            "dia": "2026-11-22",
+            "hora": "12:53",
+            "resultado": "D",
+            "placar": "5-13",
+            "mapa": "Haven",
+            "agente": "Jett",
+            "agenteId": "add6443a-41bd-e414-f6ad-e58d267f4e95",
+            "mapaId": "2bee0dc9-4ffe-519b-1cbd-7fbe763a6047",
+            "k": 14,
+            "d": 17,
+            "a": 3,
+            "hs": 41,
+            "acs": 230
           }
         }
       }
