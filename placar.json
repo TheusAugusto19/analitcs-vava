@@ -1760,6 +1760,11 @@
         "minecraft": {},
         "cs": {},
         "xadrez": {}
+      },
+      "valorant": {
+        "conta": "Blank#blk1",
+        "regiao": "br",
+        "desde": "2026-01-01"
       }
     }
   }
