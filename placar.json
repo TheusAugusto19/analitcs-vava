@@ -9473,6 +9473,21 @@
             "a": 3,
             "hs": 32,
             "acs": 234
+          },
+          "ddfcafc1-0331-4496-a8bd-65dcd43a8dd1": {
+            "dia": "2026-11-23",
+            "hora": "18:36",
+            "resultado": "D",
+            "placar": "0-5",
+            "mapa": "Sunset",
+            "agente": "Raze",
+            "agenteId": "f94c3b30-42be-e959-889c-5aa313dba261",
+            "mapaId": "92584fbe-486a-b1b2-9faa-39b0f486b498",
+            "k": 2,
+            "d": 5,
+            "a": 0,
+            "hs": 38,
+            "acs": 136
           }
         }
       }
