@@ -9503,6 +9503,21 @@
             "a": 4,
             "hs": 24,
             "acs": 182
+          },
+          "3868e926-c61b-463e-b5a4-143f8f1150f6": {
+            "dia": "2026-11-23",
+            "hora": "19:15",
+            "resultado": "D",
+            "placar": "10-13",
+            "mapa": "Bind",
+            "agente": "Waylay",
+            "agenteId": "df1cb487-4902-002e-5c17-d28e83e78588",
+            "mapaId": "2c9d57ec-4431-9c5e-2939-8f9ef6dd5cba",
+            "k": 13,
+            "d": 18,
+            "a": 3,
+            "hs": 23,
+            "acs": 155
           }
         }
       }
