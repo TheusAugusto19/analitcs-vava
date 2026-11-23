@@ -1893,6 +1893,21 @@
             "a": 5,
             "hs": 18,
             "acs": 148
+          },
+          "96fce959-8008-4b08-b8fa-618aa9e9d288": {
+            "dia": "2026-11-22",
+            "hora": "21:07",
+            "resultado": "D",
+            "placar": "11-13",
+            "mapa": "Summit",
+            "agente": "Jett",
+            "agenteId": "add6443a-41bd-e414-f6ad-e58d267f4e95",
+            "mapaId": "756da597-416b-c0f2-f47b-afbdf28670bc",
+            "k": 16,
+            "d": 23,
+            "a": 5,
+            "hs": 30,
+            "acs": 193
           }
         }
       }
