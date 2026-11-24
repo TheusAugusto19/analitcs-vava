@@ -203,6 +203,13 @@ def apply(data: dict, o: dict) -> dict:
                 antigo = p.get("valorant") or {}
                 p["valorant"] = {**antigo, "conta": str(v["conta"]), "regiao": v["regiao"],
                                  "desde": antigo.get("desde") or date.today().replace(month=1, day=1).isoformat()}
+        if "voz" in o:
+            if o.get("voz") not in ("epaminondas", "clara"):
+                raise ValueError("Voz inválida.")
+            if o["voz"] == "epaminondas":
+                p.pop("voz", None)
+            else:
+                p["voz"] = o["voz"]
         if "boasVindas" in o:
             if o.get("boasVindas"):
                 p.pop("boasVindas", None)

@@ -348,6 +348,14 @@
   .bv-pular{position:absolute;top:18px;right:22px;color:var(--muted);font-weight:600;padding:8px}
   .bv-pular:hover{color:var(--text)}
   .bv-dica{font-size:12px;color:var(--muted);margin-top:16px}
+  .voz-esc{display:grid;grid-template-columns:1fr auto;gap:8px 10px;align-items:center}
+  .voz-esc > .f{grid-column:1 / -1;font-size:13px;color:var(--muted);font-weight:600}
+  .voz-ops{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .voz-op{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+  .voz-op input{display:none}
+  .voz-op small{color:var(--muted);font-size:12px}
+  .voz-op:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+  .voz-ouvir{padding:12px 14px;height:100%}
   label.chk{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;cursor:pointer}
   label.chk input{width:18px;height:18px;accent-color:var(--accent)}
   @keyframes bvIn{from{opacity:0}}
@@ -1083,25 +1091,75 @@ function ligarSync(){
 
 /* ---------------------------------------------------------- Tela de boas-vindas (com voz) */
 /* Aparece ao entrar e ao abrir o site já logado (uma vez por sessão). Dá para desligar no Editar perfil. */
-function vozPtBr(){
-  const vs = ("speechSynthesis" in window) ? speechSynthesis.getVoices() : [];
-  return vs.find(v => /^pt[-_]BR/i.test(v.lang) && /google|natural|online/i.test(v.name)) || vs.find(v => /^pt[-_]BR/i.test(v.lang)) || vs.find(v => /^pt/i.test(v.lang));
+/* Vozes da boas-vindas. Primeiro tenta o mp3 em vozes/<voz>/<nome>.mp3 (ou geral.mp3), que funciona
+   em qualquer lugar (Discord, celular). Sem mp3, usa a voz de leitura do navegador mais parecida. */
+const VOZES = {
+  epaminondas: { nome: "Epaminondas", desc: "masculina", pitch: 0.8, rate: 0.95, gosta: /daniel|ant[oô]nio|felipe|ricardo|fabio|male|masculin/i, evita: /maria|francisca|luciana|thalita|female|feminin/i },
+  clara:       { nome: "Clara",       desc: "feminina",  pitch: 1.05, rate: 1,   gosta: /francisca|maria|luciana|thalita|vit[oó]ria|female|feminin/i, evita: /daniel|ant[oô]nio|felipe|ricardo|male|masculin/i },
+};
+const vozDe = nome => VOZES[db.perfis[nome]?.voz] ? db.perfis[nome].voz : "epaminondas";
+function vozPtBr(id){
+  const vs = ("speechSynthesis" in window) ? speechSynthesis.getVoices().filter(v => /^pt/i.test(v.lang)) : [], c = VOZES[id] || VOZES.epaminondas;
+  const br = vs.filter(v => /^pt[-_]BR/i.test(v.lang));
+  return br.find(v => c.gosta.test(v.name)) || br.find(v => !c.evita.test(v.name)) || br[0] || vs[0];
 }
-function falarBoasVindas(nome){
-  const orb = document.querySelector(".bv-orb");
-  if (!orb || !("speechSynthesis" in window)) return;
+let vozCtx = null, vozAudio = null;
+/* Toca o mp3 com um leve efeito de assistente (filtro de rádio + eco curto) e faz a bolinha pulsar com o volume. */
+async function tocarMp3(url, orb){
+  const r = await fetch(url, { method: "HEAD", cache: "no-store" }).catch(() => null);
+  if (!r || !r.ok) return false;
+  try { vozAudio?.pause(); } catch {}
+  const a = vozAudio = new Audio(url);
+  let an = null;
+  try {
+    vozCtx ||= new (window.AudioContext || window.webkitAudioContext)();
+    if (vozCtx.state === "suspended") await vozCtx.resume();
+    const src = vozCtx.createMediaElementSource(a);
+    const hp = vozCtx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 160;
+    const pk = vozCtx.createBiquadFilter(); pk.type = "peaking"; pk.frequency.value = 2600; pk.Q.value = 0.9; pk.gain.value = 4;
+    const eco = vozCtx.createDelay(); eco.delayTime.value = 0.085;
+    const ret = vozCtx.createGain(); ret.gain.value = 0.22;
+    an = vozCtx.createAnalyser(); an.fftSize = 512;
+    src.connect(hp).connect(pk).connect(an);
+    pk.connect(eco).connect(ret).connect(an); ret.connect(eco);
+    an.connect(vozCtx.destination);
+  } catch { an = null; }
+  orb?.classList.remove("tocar");
+  try { await a.play(); } catch { orb?.classList.add("tocar"); return true; }
+  orb?.classList.add("falando");
+  if (an && orb) {
+    const buf = new Uint8Array(an.fftSize);
+    const loop = () => {
+      if (a.paused || a.ended) { orb.style.transform = ""; orb.style.filter = ""; return; }
+      an.getByteTimeDomainData(buf);
+      let pico = 0; for (const v of buf) pico = Math.max(pico, Math.abs(v - 128));
+      const n = Math.min(1, pico / 70);
+      orb.style.transform = `scale(${1 + n * 0.22})`; orb.style.filter = `brightness(${1 + n * 0.5})`;
+      requestAnimationFrame(loop);
+    };
+    orb.style.animation = "none"; requestAnimationFrame(loop);
+  }
+  a.onended = () => { orb?.classList.remove("falando"); if (orb) { orb.style.animation = ""; orb.style.transform = ""; orb.style.filter = ""; } };
+  return true;
+}
+async function falarBoasVindas(nome, vozId){
+  const orb = document.querySelector(".bv-orb"), id = vozId || (nome ? vozDe(nome) : "epaminondas");
+  try { speechSynthesis.cancel(); } catch {}
+  if (await tocarMp3(`vozes/${id}/${slug(nome || "geral")}.mp3`, orb)) return;
+  if (await tocarMp3(`vozes/${id}/geral.mp3`, orb)) return;
+  if (!("speechSynthesis" in window)) { orb?.classList.add("tocar"); return; }
+  const c = VOZES[id] || VOZES.epaminondas;
   const falar = () => {
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(`Seja bem-vindo${nome ? ", " + nome : ""}. O que vai ser para hoje?`);
-      u.lang = "pt-BR"; u.rate = 1; u.pitch = 1;
-      const v = vozPtBr(); if (v) u.voice = v;
-      u.onstart = () => { orb.classList.remove("tocar"); orb.classList.add("falando"); };
-      u.onend = u.onerror = () => orb.classList.remove("falando");
-      u.onboundary = () => { orb.classList.remove("pulso"); void orb.offsetWidth; orb.classList.add("pulso"); };
+      u.lang = "pt-BR"; u.rate = c.rate; u.pitch = c.pitch;
+      const v = vozPtBr(id); if (v) u.voice = v;
+      u.onstart = () => { orb?.classList.remove("tocar"); orb?.classList.add("falando"); };
+      u.onend = u.onerror = () => orb?.classList.remove("falando");
+      u.onboundary = () => { if (!orb) return; orb.classList.remove("pulso"); void orb.offsetWidth; orb.classList.add("pulso"); };
       speechSynthesis.speak(u);
-      // Sem um clique antes, o navegador não deixa falar: mostra "toque para ouvir".
-      setTimeout(() => { if (!orb.classList.contains("falando") && !speechSynthesis.speaking) orb.classList.add("tocar"); }, 1200);
+      setTimeout(() => { if (orb && !orb.classList.contains("falando") && !speechSynthesis.speaking) orb.classList.add("tocar"); }, 1200);
     } catch {}
   };
   if (speechSynthesis.getVoices().length) falar();
@@ -1188,6 +1246,11 @@ function abrirPerfilDlg(nome, editar){
           <label class="f">Novo PIN<input class="inp" id="editPin" placeholder="••••" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" title="4 números"></label>
         </div>
         <label class="chk"><input type="checkbox" id="editBV" ${p.boasVindas === false ? "" : "checked"}> Tela de boas-vindas com voz ao entrar</label>
+        <div class="voz-esc">
+          <span class="f">Voz da boas-vindas</span>
+          <div class="voz-ops">${Object.entries(VOZES).map(([id, v]) => `<label class="voz-op"><input type="radio" name="editVoz" value="${id}" ${vozDe(nome) === id ? "checked" : ""}><b>${v.nome}</b><small>${v.desc}</small></label>`).join("")}</div>
+          <button type="button" class="btn ghost voz-ouvir" data-act="voz-ouvir">▶ Ouvir</button>
+        </div>
         ${TRACKER_ON ? `<div class="row2 conta2">
           <label class="f">Conta do Valorant<input class="inp" id="editConta" placeholder="Nome#TAG" value="${esc(p.valorant?.conta || "")}" maxlength="22"></label>
           <label class="f">Região<select class="inp" id="editRegiao">${Object.entries(REGIOES).map(([k, n]) => `<option value="${k}" ${k === (p.valorant?.regiao || "br") ? "selected" : ""}>${n}</option>`).join("")}</select></label>
@@ -1295,6 +1358,7 @@ document.addEventListener("click", async e => {
     if (act === "jogo") { jogo = b.dataset.j; store.set("jogo", jogo); render(); }
     if (act === "jogos") abrirJogosDlg();
     if (act === "bv-falar") falarBoasVindas(sessao?.nome || "");
+    if (act === "voz-ouvir") falarBoasVindas(sessao?.nome || "", document.querySelector('input[name="editVoz"]:checked')?.value);
     if (act === "bv-fechar") fecharBoasVindas();
     if (act === "bv-jogo") { jogo = b.dataset.j; store.set("jogo", jogo); view = null; aba = "contador"; fecharBoasVindas(); render(); scrollTo({ top: 0 }); }
     if (act === "abrir") { view = b.dataset.nome; render(); scrollTo({ top: 0, behavior: "smooth" }); }
@@ -1408,7 +1472,7 @@ document.addEventListener("submit", async e => {
         if (c && !CONTA_RE.test(c)) throw new Error("Conta do Valorant: use o formato Nome#TAG.");
         if (c && (c !== atual.conta || r !== atual.regiao)) valorant = { conta: c, regiao: r };
       }
-      const nome = await acao(comPin({ op: "perfil_editar", novoNome, boasVindas: $("editBV").checked, ...(novoPin ? { novoPin } : {}), ...(foto ? { foto } : {}), ...(sel ? { elo: sel.value } : {}), ...(valorant ? { valorant } : {}) }));
+      const nome = await acao(comPin({ op: "perfil_editar", novoNome, boasVindas: $("editBV").checked, voz: f.querySelector('input[name="editVoz"]:checked')?.value || "epaminondas", ...(novoPin ? { novoPin } : {}), ...(foto ? { foto } : {}), ...(sel ? { elo: sel.value } : {}), ...(valorant ? { valorant } : {}) }));
       if (valorant) sincronizarRanqueadas(nome).catch(e => toast(e.message, 1));
       sessao = { nome, pin: novoPin || sessao.pin }; try { sessionStorage.setItem("sessao", JSON.stringify(sessao)); } catch {}
       $("perfilDlg").close(); view = nome; render(); toast("Perfil atualizado.");
@@ -1541,6 +1605,7 @@ function aplicar(data, o){
         p.valorant = { ...(p.valorant || {}), conta: v.conta, regiao: v.regiao, desde: p.valorant?.desde || (hojeISO().slice(0, 4) + "-01-01") };
       }
     }
+    if ("voz" in o) { if (!["epaminondas", "clara"].includes(o.voz)) throw new Error("Voz inválida."); if (o.voz === "epaminondas") delete p.voz; else p.voz = o.voz; }
     if ("boasVindas" in o) { if (o.boasVindas) delete p.boasVindas; else p.boasVindas = false; }
     if (o.novoPin) { if (!/^\d{4}$/.test(o.novoPin)) throw new Error("PIN precisa ter 4 números."); p.pin = o.novoPin; }
     const nn = String(o.novoNome ?? nome).trim();
