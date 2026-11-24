@@ -204,7 +204,7 @@ def apply(data: dict, o: dict) -> dict:
                 p["valorant"] = {**antigo, "conta": str(v["conta"]), "regiao": v["regiao"],
                                  "desde": antigo.get("desde") or date.today().replace(month=1, day=1).isoformat()}
         if "voz" in o:
-            if o.get("voz") not in ("epaminondas", "clara"):
+            if o.get("voz") not in ("epaminondas", "clara", "mudo"):
                 raise ValueError("Voz inválida.")
             if o["voz"] == "epaminondas":
                 p.pop("voz", None)

@@ -354,7 +354,8 @@
   .bv-dica{font-size:12px;color:var(--muted);margin-top:16px}
   .voz-esc{display:grid;grid-template-columns:1fr auto;gap:8px 10px;align-items:center}
   .voz-esc > .f{grid-column:1 / -1;font-size:13px;color:var(--muted);font-weight:600}
-  .voz-ops{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .voz-ops{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  @media (max-width:480px){.voz-esc{grid-template-columns:1fr}.voz-ops{grid-template-columns:1fr 1fr}}
   .voz-op{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
   .voz-op input{display:none}
   .voz-op small{color:var(--muted);font-size:12px}
@@ -1101,7 +1102,7 @@ const VOZES = {
   epaminondas: { nome: "Epaminondas", desc: "masculina", pitch: 0.8, rate: 0.95, gosta: /daniel|ant[oô]nio|felipe|ricardo|fabio|male|masculin/i, evita: /maria|francisca|luciana|thalita|female|feminin/i },
   clara:       { nome: "Clara",       desc: "feminina",  pitch: 1.05, rate: 1,   gosta: /francisca|maria|luciana|thalita|vit[oó]ria|female|feminin/i, evita: /daniel|ant[oô]nio|felipe|ricardo|male|masculin/i },
 };
-const vozDe = nome => VOZES[db.perfis[nome]?.voz] ? db.perfis[nome].voz : "epaminondas";
+const vozDe = nome => db.perfis[nome]?.voz === "mudo" ? "mudo" : VOZES[db.perfis[nome]?.voz] ? db.perfis[nome].voz : "epaminondas";
 function vozPtBr(id){
   const vs = ("speechSynthesis" in window) ? speechSynthesis.getVoices().filter(v => /^pt/i.test(v.lang)) : [], c = VOZES[id] || VOZES.epaminondas;
   const br = vs.filter(v => /^pt[-_]BR/i.test(v.lang));
@@ -1149,6 +1150,7 @@ async function tocarMp3(url, orb){
 async function falarBoasVindas(nome, vozId){
   const orb = document.querySelector(".bv-orb"), id = vozId || (nome ? vozDe(nome) : "epaminondas");
   try { speechSynthesis.cancel(); } catch {}
+  if (id === "mudo") return; // "Sem voz": mostra a tela, mas não fala
   if (await tocarMp3(`vozes/${id}/${slug(nome || "geral")}.mp3`, orb)) return;
   if (await tocarMp3(`vozes/${id}/geral.mp3`, orb)) return;
   if (!("speechSynthesis" in window)) { orb?.classList.add("tocar"); return; }
@@ -1252,7 +1254,8 @@ function abrirPerfilDlg(nome, editar){
         <label class="chk"><input type="checkbox" id="editBV" ${p.boasVindas === false ? "" : "checked"}> Tela de boas-vindas com voz ao entrar</label>
         <div class="voz-esc">
           <span class="f">Voz da boas-vindas</span>
-          <div class="voz-ops">${Object.entries(VOZES).map(([id, v]) => `<label class="voz-op"><input type="radio" name="editVoz" value="${id}" ${vozDe(nome) === id ? "checked" : ""}><b>${v.nome}</b><small>${v.desc}</small></label>`).join("")}</div>
+          <div class="voz-ops">${Object.entries(VOZES).map(([id, v]) => `<label class="voz-op"><input type="radio" name="editVoz" value="${id}" ${vozDe(nome) === id ? "checked" : ""}><b>${v.nome}</b><small>${v.desc}</small></label>`).join("")}
+            <label class="voz-op"><input type="radio" name="editVoz" value="mudo" ${vozDe(nome) === "mudo" ? "checked" : ""}><b>Sem voz</b><small>só a tela</small></label></div>
           <button type="button" class="btn ghost voz-ouvir" data-act="voz-ouvir">▶ Ouvir</button>
         </div>
         ${TRACKER_ON ? `<div class="row2 conta2">
@@ -1362,7 +1365,7 @@ document.addEventListener("click", async e => {
     if (act === "jogo") { jogo = b.dataset.j; store.set("jogo", jogo); render(); }
     if (act === "jogos") abrirJogosDlg();
     if (act === "bv-falar") falarBoasVindas(sessao?.nome || "");
-    if (act === "voz-ouvir") falarBoasVindas(sessao?.nome || "", document.querySelector('input[name="editVoz"]:checked')?.value);
+    if (act === "voz-ouvir") { const v = document.querySelector('input[name="editVoz"]:checked')?.value; if (v === "mudo") toast("Sem voz: a tela aparece, mas não fala."); else falarBoasVindas(sessao?.nome || "", v); }
     if (act === "bv-fechar") fecharBoasVindas();
     if (act === "bv-jogo") { jogo = b.dataset.j; store.set("jogo", jogo); view = null; aba = "contador"; fecharBoasVindas(); render(); scrollTo({ top: 0 }); }
     if (act === "abrir") { view = b.dataset.nome; render(); scrollTo({ top: 0, behavior: "smooth" }); }
@@ -1609,7 +1612,7 @@ function aplicar(data, o){
         p.valorant = { ...(p.valorant || {}), conta: v.conta, regiao: v.regiao, desde: p.valorant?.desde || (hojeISO().slice(0, 4) + "-01-01") };
       }
     }
-    if ("voz" in o) { if (!["epaminondas", "clara"].includes(o.voz)) throw new Error("Voz inválida."); if (o.voz === "epaminondas") delete p.voz; else p.voz = o.voz; }
+    if ("voz" in o) { if (!["epaminondas", "clara", "mudo"].includes(o.voz)) throw new Error("Voz inválida."); if (o.voz === "epaminondas") delete p.voz; else p.voz = o.voz; }
     if ("boasVindas" in o) { if (o.boasVindas) delete p.boasVindas; else p.boasVindas = false; }
     if (o.novoPin) { if (!/^\d{4}$/.test(o.novoPin)) throw new Error("PIN precisa ter 4 números."); p.pin = o.novoPin; }
     const nn = String(o.novoNome ?? nome).trim();
