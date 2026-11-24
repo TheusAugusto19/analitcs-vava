@@ -203,6 +203,11 @@ def apply(data: dict, o: dict) -> dict:
                 antigo = p.get("valorant") or {}
                 p["valorant"] = {**antigo, "conta": str(v["conta"]), "regiao": v["regiao"],
                                  "desde": antigo.get("desde") or date.today().replace(month=1, day=1).isoformat()}
+        if "boasVindas" in o:
+            if o.get("boasVindas"):
+                p.pop("boasVindas", None)
+            else:
+                p["boasVindas"] = False
         if o.get("novoPin"):
             if not PIN.match(str(o["novoPin"])):
                 raise ValueError("PIN precisa ter 4 números.")

@@ -317,6 +317,44 @@
   .chart-hint{color:var(--muted);font-size:12px;margin-top:6px}
   tr.clic{cursor:pointer} tr.clic:hover td{background:var(--panel2)} tr.sel td{background:color-mix(in srgb,var(--accent) 14%,transparent)}
   .conta2{grid-template-columns:1fr 150px}
+  /* Tela de boas-vindas */
+  .bv{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;overflow:auto;
+    background:radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--accent) 24%,transparent),transparent 55%),var(--bg);animation:bvIn .5s ease}
+  .bv[hidden]{display:none}
+  .lt-card{width:min(380px,100%);display:flex;flex-direction:column;gap:14px;text-align:left;padding:28px;animation:bvSobe .4s both}
+  .lt-card .brand{font-size:22px}
+  .lt-card h1{font-size:20px;margin:4px 0 2px}
+  .lt-card .btn{margin-top:4px}
+  .lt-dica{color:var(--muted);font-size:12px;margin-top:-6px}
+  .lt-olhar{color:var(--muted);font-size:13px;font-weight:600;align-self:center}
+  .lt-olhar:hover{color:var(--text)}
+  body.bv-on{overflow:hidden}
+  .bv-orb{width:170px;height:170px;border-radius:50%;flex:none;position:relative;cursor:pointer;
+    background:radial-gradient(circle at 34% 30%,#fff 0%,color-mix(in srgb,var(--accent) 55%,#fff) 16%,var(--accent) 48%,color-mix(in srgb,var(--accent) 45%,#000) 100%);
+    box-shadow:0 0 40px 8px color-mix(in srgb,var(--accent) 55%,transparent),0 0 120px 40px color-mix(in srgb,var(--accent) 22%,transparent);animation:bvRespira 4s ease-in-out infinite}
+  .bv-orb::before{content:"";position:absolute;inset:-14px;border-radius:50%;border:2px solid color-mix(in srgb,var(--accent) 45%,transparent);opacity:0}
+  .bv-orb.falando{animation:bvFala .45s ease-in-out infinite alternate}
+  .bv-orb.falando::before{animation:bvOnda 1.2s ease-out infinite}
+  .bv-orb.pulso{filter:brightness(1.35)}
+  .bv-orb.tocar::after{content:"🔊 Toque para ouvir";position:absolute;top:calc(100% + 14px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:13px;font-weight:600;color:var(--muted)}
+  .bv-t{font-family:"Bebas Neue",Impact,"Arial Narrow",sans-serif;font-weight:400;font-size:clamp(40px,7vw,76px);letter-spacing:1px;line-height:1;margin-top:34px;animation:bvSobe .6s .1s both}
+  .bv-t b{color:var(--accent);font-weight:400}
+  .bv-s{font-size:20px;color:var(--muted);animation:bvSobe .6s .2s both}
+  .bv-jogos{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:18px;max-width:760px}
+  .bv-jogos button{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:126px;padding:18px 20px;border-radius:18px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:700;font-size:15px;transition:transform .2s,box-shadow .2s,border-color .2s;animation:bvSobe .5s both}
+  .bv-jogos button span{font-size:36px;line-height:1}
+  .bv-jogos button:hover,.bv-jogos button:focus-visible{border-color:var(--c);transform:translateY(-4px);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 30%,transparent),0 14px 34px -12px var(--c);outline:none}
+  .bv-pular{position:absolute;top:18px;right:22px;color:var(--muted);font-weight:600;padding:8px}
+  .bv-pular:hover{color:var(--text)}
+  .bv-dica{font-size:12px;color:var(--muted);margin-top:16px}
+  label.chk{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;cursor:pointer}
+  label.chk input{width:18px;height:18px;accent-color:var(--accent)}
+  @keyframes bvIn{from{opacity:0}}
+  @keyframes bvSobe{from{opacity:0;transform:translateY(14px)}}
+  @keyframes bvRespira{50%{transform:scale(1.05);box-shadow:0 0 60px 14px color-mix(in srgb,var(--accent) 65%,transparent),0 0 150px 50px color-mix(in srgb,var(--accent) 28%,transparent)}}
+  @keyframes bvFala{to{transform:scale(1.13);filter:brightness(1.2)}}
+  @keyframes bvOnda{from{opacity:.9;transform:scale(1)}to{opacity:0;transform:scale(1.5)}}
+  @media (prefers-reduced-motion:reduce){.bv,.bv-orb,.bv-orb.falando,.bv-orb.falando::before,.bv-t,.bv-s,.bv-jogos button{animation:none}}
   .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--panel2);border:1px solid var(--line);padding:12px 18px;border-radius:12px;z-index:50;transition:transform .3s;font-weight:600;font-size:14px}
   .toast.show{transform:translate(-50%,0)}
   .toast.err{border-color:var(--loss);color:var(--loss)}
@@ -364,6 +402,7 @@
 </aside>
 
 <div class="toast" id="toast"></div>
+<div class="bv" id="boasVindas" hidden></div>
 <dialog id="perfilDlg" class="pdlg"></dialog>
 <input type="file" id="fotoRapida" accept="image/*" hidden>
 
@@ -386,6 +425,7 @@ const ICONE = { valorant:"🎯", minecraft:"⛏️", cs:"💣", xadrez:"♟️" 
 const CORES = {};
 const JOGOS_FABRICA = Object.keys(JOGOS);
 const HEX_RE = /^#[0-9a-f]{6}$/i;
+const CORES_PADRAO = { valorant: "#ff4655", minecraft: "#62c13f", cs: "#f5a524", xadrez: "#e8e8e8" };
 function atualizarJogos(){
   for (const [id, j] of Object.entries(db.jogos || {})) {
     if (j.nome) JOGOS[id] = j.nome;
@@ -1040,6 +1080,70 @@ function ligarSync(){
   syncLigado = true; sincronizarTodos(); setInterval(sincronizarTodos, 5 * 60 * 1000);
 }
 
+/* ---------------------------------------------------------- Tela de boas-vindas (com voz) */
+/* Aparece ao entrar e ao abrir o site já logado (uma vez por sessão). Dá para desligar no Editar perfil. */
+function vozPtBr(){
+  const vs = ("speechSynthesis" in window) ? speechSynthesis.getVoices() : [];
+  return vs.find(v => /^pt[-_]BR/i.test(v.lang) && /google|natural|online/i.test(v.name)) || vs.find(v => /^pt[-_]BR/i.test(v.lang)) || vs.find(v => /^pt/i.test(v.lang));
+}
+function falarBoasVindas(nome){
+  const orb = document.querySelector(".bv-orb");
+  if (!orb || !("speechSynthesis" in window)) return;
+  const falar = () => {
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(`Seja bem-vindo${nome ? ", " + nome : ""}. O que vai ser para hoje?`);
+      u.lang = "pt-BR"; u.rate = 1; u.pitch = 1;
+      const v = vozPtBr(); if (v) u.voice = v;
+      u.onstart = () => { orb.classList.remove("tocar"); orb.classList.add("falando"); };
+      u.onend = u.onerror = () => orb.classList.remove("falando");
+      u.onboundary = () => { orb.classList.remove("pulso"); void orb.offsetWidth; orb.classList.add("pulso"); };
+      speechSynthesis.speak(u);
+      // Sem um clique antes, o navegador não deixa falar: mostra "toque para ouvir".
+      setTimeout(() => { if (!orb.classList.contains("falando") && !speechSynthesis.speaking) orb.classList.add("tocar"); }, 1200);
+    } catch {}
+  };
+  if (speechSynthesis.getVoices().length) falar();
+  else { let feito = false; const f = () => { if (!feito) { feito = true; falar(); } }; speechSynthesis.addEventListener("voiceschanged", f, { once: true }); setTimeout(f, 700); }
+}
+function mostrarBoasVindas(){
+  const p = sessao && db.perfis[sessao.nome];
+  if (!p || p.boasVindas === false) return false;
+  const el = $("boasVindas");
+  el.innerHTML = `
+    <button class="bv-pular" data-act="bv-fechar">Pular ›</button>
+    <button class="bv-orb" data-act="bv-falar" title="Ouvir de novo" aria-label="Ouvir a mensagem de novo"></button>
+    <h1 class="bv-t">Seja bem-vindo, <b>${esc(sessao.nome)}</b>.</h1>
+    <p class="bv-s">O que vai ser para hoje?</p>
+    <div class="bv-jogos">${Object.entries(JOGOS).map(([k, n], i) => `<button data-act="bv-jogo" data-j="${esc(k)}" style="--c:${CORES[k] || CORES_PADRAO[k] || "#7c5cff"};animation-delay:${0.25 + i * 0.07}s"><span>${esc(ICONE[k])}</span>${esc(n)}</button>`).join("")}</div>
+    <p class="bv-dica">Dá para desligar esta tela em ✎ Editar perfil.</p>`;
+  el.hidden = false; document.body.classList.add("bv-on");
+  try { sessionStorage.setItem("bv-visto", "1"); } catch {}
+  falarBoasVindas(sessao.nome);
+  return true;
+}
+/* Tela de login: "Quem é você?" com as fotos dos perfis. Vem antes da tela de boas-vindas. */
+function mostrarLogin(){
+  const el = $("boasVindas");
+  el.innerHTML = `
+    <form id="loginTela" class="card lt-card" autocomplete="off">
+      <div class="brand"><i>◆</i> Analytics de Partidas</div>
+      <h1>Entrar</h1>
+      <label class="f">Nome<input class="inp" id="ltNome" required autofocus autocomplete="off" spellcheck="false"></label>
+      <label class="f">Senha (PIN)<input class="inp" id="ltPin" type="password" inputmode="numeric" maxlength="4" required></label>
+      ${leitura ? `<label class="f">Token do GitHub<input class="inp" id="ltToken" type="password" placeholder="github_pat_..." required></label>
+      <small class="lt-dica">Necessário para salvar. Fica guardado só neste navegador; nas próximas vezes não pede de novo.</small>` : ""}
+      <button class="btn">Entrar</button>
+      <button type="button" class="lt-olhar" data-act="login-pular">Só quero olhar</button>
+    </form>`;
+  el.hidden = false; document.body.classList.add("bv-on");
+  setTimeout(() => $("ltNome")?.focus());
+}
+function fecharBoasVindas(){
+  try { speechSynthesis.cancel(); } catch {}
+  $("boasVindas").hidden = true; document.body.classList.remove("bv-on");
+}
+
 function abrirJogosDlg(){
   const dlg = $("perfilDlg"), pode = sessao && !leitura;
   dlg.innerHTML = `
@@ -1050,7 +1154,7 @@ function abrirJogosDlg(){
       <form class="jogo-item" data-jogo="${esc(id)}">
         <input class="inp ico" name="icone" value="${esc(ICONE[id])}" maxlength="4" title="Ícone (emoji)" ${pode ? "" : "disabled"}>
         <b>${esc(n)}</b>
-        <input type="color" name="cor" value="${CORES[id] || ({ valorant: "#ff4655", minecraft: "#62c13f", cs: "#f5a524", xadrez: "#e8e8e8" })[id] || "#7c5cff"}" title="Cor" ${pode ? "" : "disabled"}>
+        <input type="color" name="cor" value="${CORES[id] || CORES_PADRAO[id] || "#7c5cff"}" title="Cor" ${pode ? "" : "disabled"}>
         ${pode ? '<button class="btn ghost">Salvar</button>' : ""}
       </form>`).join("")}</div>
     ${pode ? `<form id="jogoNovo" class="add jogo-novo">
@@ -1081,6 +1185,7 @@ function abrirPerfilDlg(nome, editar){
           <label class="f">Nome<input class="inp" id="editNome" value="${esc(nome)}" maxlength="24" required></label>
           <label class="f">Novo PIN<input class="inp" id="editPin" placeholder="••••" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" title="4 números"></label>
         </div>
+        <label class="chk"><input type="checkbox" id="editBV" ${p.boasVindas === false ? "" : "checked"}> Tela de boas-vindas com voz ao entrar</label>
         ${TRACKER_ON ? `<div class="row2 conta2">
           <label class="f">Conta do Valorant<input class="inp" id="editConta" placeholder="Nome#TAG" value="${esc(p.valorant?.conta || "")}" maxlength="22"></label>
           <label class="f">Região<select class="inp" id="editRegiao">${Object.entries(REGIOES).map(([k, n]) => `<option value="${k}" ${k === (p.valorant?.regiao || "br") ? "selected" : ""}>${n}</option>`).join("")}</select></label>
@@ -1187,9 +1292,13 @@ document.addEventListener("click", async e => {
   try {
     if (act === "jogo") { jogo = b.dataset.j; store.set("jogo", jogo); render(); }
     if (act === "jogos") abrirJogosDlg();
+    if (act === "bv-falar") falarBoasVindas(sessao?.nome || "");
+    if (act === "bv-fechar") fecharBoasVindas();
+    if (act === "bv-jogo") { jogo = b.dataset.j; store.set("jogo", jogo); view = null; aba = "contador"; fecharBoasVindas(); render(); scrollTo({ top: 0 }); }
     if (act === "abrir") { view = b.dataset.nome; render(); scrollTo({ top: 0, behavior: "smooth" }); }
     if (act === "home") { view = null; render(); }
-    if (act === "sair") { sair(); render(); }
+    if (act === "sair") { sair(); view = null; render(); mostrarLogin(); }
+    if (act === "login-pular") { try { sessionStorage.setItem("login-pulado", "1"); } catch {} fecharBoasVindas(); }
     if (act === "trocar-foto") $("fotoRapida").click();
     if (act === "expandir") abrirPerfilDlg(b.dataset.nome, false);
     if (act === "aba") { aba = b.dataset.aba; render(); }
@@ -1247,11 +1356,15 @@ document.addEventListener("submit", async e => {
       try { await conectarGitHub($("ghToken").value.trim()); toast("Conectado! Agora dá pra editar."); }
       finally { btn.disabled = false; btn.textContent = "Conectar"; }
     }
-    if (f.id === "loginForm") {
-      const pin = leitura ? "" : $("loginPin").value.trim();
-      const nome = await acao({ op: "login", nome: $("loginNome").value, pin });
+    if (f.id === "loginForm" || f.id === "loginTela") {
+      const tela = f.id === "loginTela";
+      const token = tela ? $("ltToken")?.value.trim() : "";
+      if (token) await conectarGitHub(token); // conecta antes, para o PIN ser conferido
+      const pin = leitura ? "" : $(tela ? "ltPin" : "loginPin").value.trim();
+      const nome = await acao({ op: "login", nome: $(tela ? "ltNome" : "loginNome").value, pin });
       sessao = { nome, pin }; try { sessionStorage.setItem("sessao", JSON.stringify(sessao)); } catch {}
-      view = nome; render(); toast(`Fala, ${nome}!`);
+      view = tela ? null : nome; render();
+      if (!mostrarBoasVindas()) { fecharBoasVindas(); toast(`Fala, ${nome}!`); }
     }
     if (f.id === "jogoNovo") {
       const id = await acao(comPin({ op: "jogo_criar", jogoNome: $("jnNome").value, icone: $("jnIcone").value, cor: $("jnCor").value }));
@@ -1283,7 +1396,7 @@ document.addEventListener("submit", async e => {
         if (c && !CONTA_RE.test(c)) throw new Error("Conta do Valorant: use o formato Nome#TAG.");
         if (c && (c !== atual.conta || r !== atual.regiao)) valorant = { conta: c, regiao: r };
       }
-      const nome = await acao(comPin({ op: "perfil_editar", novoNome, ...(novoPin ? { novoPin } : {}), ...(foto ? { foto } : {}), ...(sel ? { elo: sel.value } : {}), ...(valorant ? { valorant } : {}) }));
+      const nome = await acao(comPin({ op: "perfil_editar", novoNome, boasVindas: $("editBV").checked, ...(novoPin ? { novoPin } : {}), ...(foto ? { foto } : {}), ...(sel ? { elo: sel.value } : {}), ...(valorant ? { valorant } : {}) }));
       if (valorant) sincronizarRanqueadas(nome).catch(e => toast(e.message, 1));
       sessao = { nome, pin: novoPin || sessao.pin }; try { sessionStorage.setItem("sessao", JSON.stringify(sessao)); } catch {}
       $("perfilDlg").close(); view = nome; render(); toast("Perfil atualizado.");
@@ -1416,6 +1529,7 @@ function aplicar(data, o){
         p.valorant = { ...(p.valorant || {}), conta: v.conta, regiao: v.regiao, desde: p.valorant?.desde || (hojeISO().slice(0, 4) + "-01-01") };
       }
     }
+    if ("boasVindas" in o) { if (o.boasVindas) delete p.boasVindas; else p.boasVindas = false; }
     if (o.novoPin) { if (!/^\d{4}$/.test(o.novoPin)) throw new Error("PIN precisa ter 4 números."); p.pin = o.novoPin; }
     const nn = String(o.novoNome ?? nome).trim();
     if (nn !== nome) { // troca o nome (a chave) e atualiza os favoritos de todo mundo
@@ -1637,6 +1751,9 @@ async function iniciar(){
   $("addElo").innerHTML = eloPicker("addElo");
   previewFoto($("addFoto"), $("addPrev"));
   atualizarBanner(); render(); iniciarAtualizacao(); ligarSync(); carregarAssets();
+  const ss = k => { try { return sessionStorage.getItem(k); } catch { return "1"; } };
+  if (!sessao && !ss("login-pulado")) mostrarLogin();
+  else if (sessao && !ss("bv-visto")) mostrarBoasVindas();
 }
 iniciar();
 </script>
