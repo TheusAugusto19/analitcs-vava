@@ -321,6 +321,10 @@
   .bv{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;overflow:auto;
     background:radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--accent) 24%,transparent),transparent 55%),var(--bg);animation:bvIn .5s ease}
   .bv[hidden]{display:none}
+  .bv-carregando{display:flex;flex-direction:column;align-items:center;gap:18px}
+  .bv-carregando .brand{font-size:26px}
+  .bv-spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:bvGira .8s linear infinite}
+  @keyframes bvGira{to{transform:rotate(360deg)}}
   .lt-card{width:min(380px,100%);display:flex;flex-direction:column;gap:14px;text-align:left;padding:28px;animation:bvSobe .4s both}
   .lt-card .brand{font-size:22px}
   .lt-card h1{font-size:20px;margin:4px 0 2px}
@@ -378,7 +382,7 @@
   }
 </style>
 </head>
-<body data-jogo="valorant">
+<body data-jogo="valorant" class="bv-on">
 
 <header class="topbar">
   <div class="brand"><i>◆</i> Analytics de Partidas</div>
@@ -411,7 +415,7 @@
 </aside>
 
 <div class="toast" id="toast"></div>
-<div class="bv" id="boasVindas" hidden></div>
+<div class="bv" id="boasVindas"><div class="bv-carregando"><div class="brand"><i>◆</i> Analytics de Partidas</div><span class="bv-spin"></span></div></div>
 <dialog id="perfilDlg" class="pdlg"></dialog>
 <input type="file" id="fotoRapida" accept="image/*" hidden>
 
@@ -1830,9 +1834,9 @@ async function iniciar(){
   atualizarBanner(); render(); iniciarAtualizacao(); ligarSync(); carregarAssets();
   const ss = k => { try { return sessionStorage.getItem(k); } catch { return "1"; } };
   if (!sessao && !ss("login-pulado")) mostrarLogin();
-  else if (sessao && !ss("bv-visto")) mostrarBoasVindas();
+  else if (!(sessao && !ss("bv-visto") && mostrarBoasVindas())) fecharBoasVindas();
 }
-iniciar();
+iniciar().catch(e => { console.error(e); fecharBoasVindas(); toast("Não consegui carregar os dados. Recarregue a página.", 1); });
 </script>
 </body>
 </html>
