@@ -19,11 +19,14 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 VOZES = RAIZ / "vozes"
-# Filtro do ffmpeg de cada voz (a Clara é a mesma voz com o tom mais agudo).
-FILTROS = {
-    "epaminondas": "asetrate=16000*0.93,aresample=44100,atempo=1.075,loudnorm=I=-16:TP=-1.5",
-    "clara": "asetrate=16000*1.32,aresample=44100,atempo=0.7576,loudnorm=I=-16:TP=-1.5",
-}
+# Ajuste de tom de cada voz (a Clara é a mesma voz com o tom mais agudo). O filtro do ffmpeg
+# muda o tom sem mudar a velocidade: asetrate sobe/desce o tom e atempo devolve a velocidade.
+TONS = {"epaminondas": 0.95, "clara": 1.22}
+
+
+def filtro(voz: str, taxa: int) -> str:
+    t = TONS[voz]
+    return f"asetrate={taxa}*{t},aresample=44100,atempo={1 / t:.4f},loudnorm=I=-16:TP=-1.5"
 # Jeito de falar nomes que o leitor pronuncia errado.
 PRONUNCIA = {"theus": "Téus"}
 
@@ -34,14 +37,15 @@ def slug(nome: str) -> str:
 
 
 def gerar(modelo: str, texto: str, destinos: dict) -> None:
+    taxa = json.loads(Path(modelo + ".json").read_text(encoding="utf-8"))["audio"]["sample_rate"]
     with tempfile.TemporaryDirectory() as tmp:
         txt, wav = Path(tmp) / "t.txt", Path(tmp) / "t.wav"
         txt.write_text(texto, encoding="utf-8")
         subprocess.run([sys.executable, "-m", "piper", "-m", modelo, "-c", modelo + ".json", "-i", str(txt), "-f", str(wav),
-                        "--length-scale", "1.12", "--sentence-silence", "0.35"], check=True)
+                        "--length-scale", "1.0", "--sentence-silence", "0.3"], check=True)
         for voz, destino in destinos.items():
             destino.parent.mkdir(parents=True, exist_ok=True)
-            subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(wav), "-af", FILTROS[voz],
+            subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(wav), "-af", filtro(voz, taxa),
                             "-c:a", "libmp3lame", "-b:a", "96k", str(destino)], check=True)
 
 
@@ -63,6 +67,15 @@ def texto_resumo(t: dict) -> str:
 
 def main() -> None:
     modelo = sys.argv[1]
+    # Trocou o modelo de voz: refaz todos os áudios gerados.
+    versao_arq, versao = VOZES / "versao.txt", Path(modelo).stem
+    if not versao_arq.exists() or versao_arq.read_text(encoding="utf-8").strip() != versao:
+        for f in VOZES.glob("*/*.mp3"):
+            f.unlink()
+        (VOZES / "resumos.json").unlink(missing_ok=True)
+        VOZES.mkdir(exist_ok=True)
+        versao_arq.write_text(versao + "\n", encoding="utf-8")
+        print(f"modelo novo ({versao}): refazendo todos os áudios")
     perfis = json.loads((RAIZ / "placar.json").read_text(encoding="utf-8")).get("perfis", {})
     falas = {"geral": "Seja bem-vindo. O que vai ser para hoje?"}
     for nome in perfis:
@@ -70,7 +83,7 @@ def main() -> None:
         falas[s] = f"Seja bem-vindo, {PRONUNCIA.get(s, nome)}. O que vai ser para hoje?"
     novos = 0
     for s, texto in falas.items():
-        faltando = {v: VOZES / v / f"{s}.mp3" for v in FILTROS if not (VOZES / v / f"{s}.mp3").exists()}
+        faltando = {v: VOZES / v / f"{s}.mp3" for v in TONS if not (VOZES / v / f"{s}.mp3").exists()}
         if faltando:
             gerar(modelo, texto, faltando)
             novos += len(faltando)
@@ -85,7 +98,7 @@ def main() -> None:
             continue
         s = slug(nome)
         atuais[s] = t
-        faltando = {v: VOZES / v / f"resumo-{s}.mp3" for v in FILTROS}
+        faltando = {v: VOZES / v / f"resumo-{s}.mp3" for v in TONS}
         if feitos.get(s) != t or not all(f.exists() for f in faltando.values()):
             gerar(modelo, texto_resumo(t), faltando)
             novos += len(faltando)

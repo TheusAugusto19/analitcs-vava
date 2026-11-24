@@ -29,17 +29,19 @@ jobs:
           pip install piper-tts
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
 
-      - name: Baixar a voz pt-BR
+      - name: Baixar a voz pt-BR (Faber, qualidade média)
         run: |
-          curl -sL -o voz.tgz https://github.com/rhasspy/piper/releases/download/v0.0.2/voice-pt-br-edresson-low.tar.gz
-          mkdir -p modelo && tar -xzf voz.tgz -C modelo
+          mkdir -p modelo
+          base=https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/pt/pt_BR/faber/medium
+          curl -fsSL -o modelo/pt_BR-faber-medium.onnx "$base/pt_BR-faber-medium.onnx"
+          curl -fsSL -o modelo/pt_BR-faber-medium.onnx.json "$base/pt_BR-faber-medium.onnx.json"
 
       - name: Gerar os áudios que faltam
-        run: python scripts/gerar_vozes.py modelo/pt-br-edresson-low.onnx
+        run: python scripts/gerar_vozes.py modelo/pt_BR-faber-medium.onnx
 
       - name: Salvar no repositório
         run: |
-          git add vozes
+          git add -A vozes
           if git diff --cached --quiet; then echo "Nada novo."; exit 0; fi
           git config user.name "vozes-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
