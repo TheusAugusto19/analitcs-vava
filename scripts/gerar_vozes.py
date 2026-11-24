@@ -3,6 +3,8 @@ Gera os áudios da tela de boas-vindas que estiverem faltando.
 
 Para cada perfil do placar.json, cria vozes/<voz>/<nome>.mp3 nas vozes Epaminondas e Clara,
 além do geral.mp3. Arquivos que já existem não são refeitos (dá para trocar à mão).
+Também gera o resumo falado do tracker (vozes/<voz>/resumo-<nome>.mp3) sempre que os números mudam;
+os números de cada resumo ficam em vozes/resumos.json, para o site saber se o áudio está em dia.
 Roda no GitHub Actions (.github/workflows/vozes.yml) sempre que o placar.json muda.
 
 Uso: python scripts/gerar_vozes.py <modelo.onnx>
@@ -43,6 +45,22 @@ def gerar(modelo: str, texto: str, destinos: dict) -> None:
                             "-c:a", "libmp3lame", "-b:a", "96k", str(destino)], check=True)
 
 
+def resumo(p: dict) -> dict | None:
+    """Mesma conta do site: total de ranqueadas salvas, vitórias, derrotas e % de vitória."""
+    ms = list(((p.get("valorant") or {}).get("partidas") or {}).values())
+    if not ms:
+        return None
+    n = len(ms)
+    v = sum(1 for m in ms if m.get("resultado") == "V")
+    d = sum(1 for m in ms if m.get("resultado") == "D")
+    return {"n": n, "v": v, "d": d, "wr": int(v * 100 / n + 0.5)}
+
+
+def texto_resumo(t: dict) -> str:
+    return (f"Você tem {t['n']} {'partida' if t['n'] == 1 else 'partidas'}. Ganhou {t['v']}, perdeu {t['d']}, "
+            f"e a sua taxa de vitória está em {t['wr']} por cento. Boa sorte hoje!")
+
+
 def main() -> None:
     modelo = sys.argv[1]
     perfis = json.loads((RAIZ / "placar.json").read_text(encoding="utf-8")).get("perfis", {})
@@ -57,6 +75,23 @@ def main() -> None:
             gerar(modelo, texto, faltando)
             novos += len(faltando)
             print(f"gerado: {s} -> {', '.join(faltando)}")
+    # Resumos do tracker: refaz só quando os números mudaram.
+    arq = VOZES / "resumos.json"
+    feitos = json.loads(arq.read_text(encoding="utf-8")) if arq.exists() else {}
+    atuais = {}
+    for nome, p in perfis.items():
+        t = resumo(p)
+        if not t:
+            continue
+        s = slug(nome)
+        atuais[s] = t
+        faltando = {v: VOZES / v / f"resumo-{s}.mp3" for v in FILTROS}
+        if feitos.get(s) != t or not all(f.exists() for f in faltando.values()):
+            gerar(modelo, texto_resumo(t), faltando)
+            novos += len(faltando)
+            print(f"resumo: {s} -> {t}")
+    if atuais != feitos:
+        arq.write_text(json.dumps(atuais, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"{novos} áudio(s) novo(s).")
 
 

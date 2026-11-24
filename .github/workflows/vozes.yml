@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: vozes
-  cancel-in-progress: false
+  cancel-in-progress: true  # o placar muda toda hora; basta a rodada mais recente
 
 jobs:
   gerar:

@@ -321,6 +321,17 @@
   .bv{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;overflow:auto;
     background:radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--accent) 24%,transparent),transparent 55%),var(--bg);animation:bvIn .5s ease}
   .bv[hidden]{display:none}
+  /* Bolinha do canto (resumo do tracker) */
+  .mini-orb{position:fixed;left:16px;bottom:16px;z-index:90;display:flex;align-items:center;gap:12px;max-width:min(460px,calc(100vw - 32px));
+    padding:10px 14px 10px 10px;border-radius:999px 18px 18px 999px;background:var(--side);border:1px solid var(--line);
+    box-shadow:0 18px 50px -18px color-mix(in srgb,var(--accent) 60%,#000);opacity:0;transform:translateY(16px) scale(.96);transition:opacity .35s,transform .35s}
+  .mini-orb.on{opacity:1;transform:none}
+  .mini-orb[hidden]{display:none}
+  .bv-orb.mini{width:58px;height:58px}
+  .bv-orb.mini::before{inset:-8px}
+  .mini-fala{font-size:13px;line-height:1.45;font-weight:500}
+  .mini-x{color:var(--muted);font-size:14px;align-self:flex-start;padding:2px 4px}
+  .mini-x:hover{color:var(--text)}
   .bv-carregando{display:flex;flex-direction:column;align-items:center;gap:18px}
   .bv-carregando .brand{font-size:26px}
   .bv-spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:bvGira .8s linear infinite}
@@ -416,6 +427,7 @@
 </aside>
 
 <div class="toast" id="toast"></div>
+<div class="mini-orb" id="miniOrb" hidden></div>
 <div class="bv" id="boasVindas"><div class="bv-carregando"><div class="brand"><i>◆</i> Analytics de Partidas</div><span class="bv-spin"></span></div></div>
 <dialog id="perfilDlg" class="pdlg"></dialog>
 <input type="file" id="fotoRapida" accept="image/*" hidden>
@@ -778,6 +790,11 @@ function statsPartidas(lista){
 
 function renderTracker(nome, eu){
   const p = db.perfis[nome], cfg = p.valorant;
+  // Primeira vez na sessão que abre o próprio Tracker: a bolinha do canto fala o resumo.
+  if (eu && Object.keys(cfg?.partidas || {}).length && !(() => { try { return sessionStorage.getItem(`trk-resumo:${nome}`); } catch { return 1; } })()) {
+    try { sessionStorage.setItem(`trk-resumo:${nome}`, "1"); } catch {}
+    setTimeout(() => falarResumoTracker(nome), 500);
+  }
   if (!cfg?.conta) return eu && !leitura ? formContaValorant() : `<p class="empty">${esc(nome)} ainda não vinculou a conta do Valorant.</p>`;
   const c = trackerCache[`${cfg.conta}|${cfg.regiao}`];
   if (!c || c.status === "carregando") { carregarTracker(nome); return `<div class="card trk-load">Carregando o tracker de <b>${esc(cfg.conta)}</b>...</div>`; }
@@ -1171,6 +1188,55 @@ async function falarBoasVindas(nome, vozId){
   if (speechSynthesis.getVoices().length) falar();
   else { let feito = false; const f = () => { if (!feito) { feito = true; falar(); } }; speechSynthesis.addEventListener("voiceschanged", f, { once: true }); setTimeout(f, 700); }
 }
+/* ---------------------------------------------------------- Resumo falado do tracker (bolinha no canto) */
+/* Primeira vez na sessão que a pessoa abre o próprio Tracker: a bolinha aparece no canto e fala o resumo.
+   Usa o mp3 gerado pelo robô (vozes/<voz>/resumo-<nome>.mp3) só se os números baterem com vozes/resumos.json;
+   senão usa a voz do navegador; sem voz nenhuma, fica a legenda. */
+const textoResumo = t => `Você tem ${t.n} ${t.n === 1 ? "partida" : "partidas"}. Ganhou ${t.v}, perdeu ${t.d}, e a sua taxa de vitória está em ${t.wr} por cento. Boa sorte hoje!`;
+function falarTexto(texto, vozId, orb){
+  if (!("speechSynthesis" in window)) return false;
+  const c = VOZES[vozId] || VOZES.epaminondas;
+  const falar = () => {
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(texto);
+      u.lang = "pt-BR"; u.rate = c.rate; u.pitch = c.pitch;
+      const v = vozPtBr(vozId); if (v) u.voice = v;
+      u.onstart = () => orb?.classList.add("falando");
+      u.onend = u.onerror = () => orb?.classList.remove("falando");
+      u.onboundary = () => { if (!orb) return; orb.classList.remove("pulso"); void orb.offsetWidth; orb.classList.add("pulso"); };
+      speechSynthesis.speak(u);
+    } catch {}
+  };
+  if (speechSynthesis.getVoices().length) falar();
+  else { let feito = false; const f = () => { if (!feito) { feito = true; falar(); } }; speechSynthesis.addEventListener("voiceschanged", f, { once: true }); setTimeout(f, 700); }
+  return true;
+}
+function fecharMiniOrb(){
+  const box = $("miniOrb"); if (!box || box.hidden) return;
+  try { speechSynthesis.cancel(); } catch {} try { vozAudio?.pause(); } catch {}
+  clearTimeout(box._t); box.classList.remove("on"); setTimeout(() => { box.hidden = true; }, 350);
+}
+async function falarResumoTracker(nome){
+  const ms = Object.values(db.perfis[nome]?.valorant?.partidas || {});
+  if (!ms.length) return;
+  const s = statsPartidas(ms), t = { n: s.n, v: s.v, d: s.dd, wr: s.wr }, texto = textoResumo(t), voz = vozDe(nome);
+  const box = $("miniOrb");
+  box.innerHTML = `<button class="bv-orb mini" data-act="mini-repetir" data-nome="${esc(nome)}" title="Ouvir de novo" aria-label="Ouvir o resumo de novo"></button>
+    <div class="mini-fala">${esc(texto)}</div><button class="mini-x" data-act="mini-fechar" title="Fechar" aria-label="Fechar">✕</button>`;
+  box.hidden = false; requestAnimationFrame(() => box.classList.add("on"));
+  const orb = box.querySelector(".bv-orb");
+  clearTimeout(box._t); box._t = setTimeout(fecharMiniOrb, 20000);
+  if (voz === "mudo") return;
+  let tocou = false;
+  try {
+    const r = await fetch(`vozes/resumos.json?t=${Date.now()}`, { cache: "no-store" });
+    const e = r.ok ? (await r.json())[slug(nome)] : null;
+    if (e && e.n === t.n && e.v === t.v && e.d === t.d && e.wr === t.wr) tocou = await tocarMp3(`vozes/${voz}/resumo-${slug(nome)}.mp3?t=${Date.now()}`, orb);
+  } catch {}
+  if (!tocou) falarTexto(texto, voz, orb);
+}
+
 function mostrarBoasVindas(){
   const p = sessao && db.perfis[sessao.nome];
   if (!p || p.boasVindas === false) return false;
@@ -1374,7 +1440,9 @@ document.addEventListener("click", async e => {
     if (act === "login-pular") { try { sessionStorage.setItem("login-pulado", "1"); } catch {} fecharBoasVindas(); }
     if (act === "trocar-foto") $("fotoRapida").click();
     if (act === "expandir") abrirPerfilDlg(b.dataset.nome, false);
-    if (act === "aba") { aba = b.dataset.aba; render(); }
+    if (act === "aba") { aba = b.dataset.aba; if (aba !== "tracker") fecharMiniOrb(); render(); }
+    if (act === "mini-repetir") falarResumoTracker(b.dataset.nome);
+    if (act === "mini-fechar") fecharMiniOrb();
     if (act === "aq-ini") { try { localStorage.setItem(aqChave(b.dataset.nome), String(Date.now())); } catch {} render(); }
     if (act === "aq-cancelar") { try { localStorage.removeItem(aqChave(b.dataset.nome)); } catch {} render(); toast("Aquecimento cancelado."); }
     if (act === "aq-fim") {
