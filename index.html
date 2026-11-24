@@ -325,6 +325,7 @@
   .lt-card .brand{font-size:22px}
   .lt-card h1{font-size:20px;margin:4px 0 2px}
   .lt-card .btn{margin-top:4px}
+  .lt-erro{color:var(--loss);font-size:13px;font-weight:600;background:color-mix(in srgb,var(--loss) 12%,transparent);border:1px solid color-mix(in srgb,var(--loss) 40%,transparent);border-radius:10px;padding:10px 12px}
   .lt-dica{color:var(--muted);font-size:12px;margin-top:-6px}
   .lt-olhar{color:var(--muted);font-size:13px;font-weight:600;align-self:center}
   .lt-olhar:hover{color:var(--text)}
@@ -355,7 +356,7 @@
   @keyframes bvFala{to{transform:scale(1.13);filter:brightness(1.2)}}
   @keyframes bvOnda{from{opacity:.9;transform:scale(1)}to{opacity:0;transform:scale(1.5)}}
   @media (prefers-reduced-motion:reduce){.bv,.bv-orb,.bv-orb.falando,.bv-orb.falando::before,.bv-t,.bv-s,.bv-jogos button{animation:none}}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--panel2);border:1px solid var(--line);padding:12px 18px;border-radius:12px;z-index:50;transition:transform .3s;font-weight:600;font-size:14px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--panel2);border:1px solid var(--line);padding:12px 18px;border-radius:12px;z-index:300;transition:transform .3s;font-weight:600;font-size:14px}
   .toast.show{transform:translate(-50%,0)}
   .toast.err{border-color:var(--loss);color:var(--loss)}
 
@@ -1133,6 +1134,7 @@ function mostrarLogin(){
       <label class="f">Senha (PIN)<input class="inp" id="ltPin" type="password" inputmode="numeric" maxlength="4" required></label>
       ${leitura ? `<label class="f">Token do GitHub<input class="inp" id="ltToken" type="password" placeholder="github_pat_..." required></label>
       <small class="lt-dica">Necessário para salvar. Fica guardado só neste navegador; nas próximas vezes não pede de novo.</small>` : ""}
+      <p class="lt-erro" id="ltErro" hidden></p>
       <button class="btn">Entrar</button>
       <button type="button" class="lt-olhar" data-act="login-pular">Só quero olhar</button>
     </form>`;
@@ -1357,11 +1359,21 @@ document.addEventListener("submit", async e => {
       finally { btn.disabled = false; btn.textContent = "Conectar"; }
     }
     if (f.id === "loginForm" || f.id === "loginTela") {
-      const tela = f.id === "loginTela";
-      const token = tela ? $("ltToken")?.value.trim() : "";
-      if (token) await conectarGitHub(token); // conecta antes, para o PIN ser conferido
-      const pin = leitura ? "" : $(tela ? "ltPin" : "loginPin").value.trim();
-      const nome = await acao({ op: "login", nome: $(tela ? "ltNome" : "loginNome").value, pin });
+      const tela = f.id === "loginTela", btn = f.querySelector("button.btn");
+      if (tela) { $("ltErro").hidden = true; btn.disabled = true; btn.textContent = "Entrando..."; }
+      let nome, pin;
+      try {
+        const token = tela ? $("ltToken")?.value.trim() : "";
+        if (token) await conectarGitHub(token); // conecta antes, para o PIN ser conferido
+        pin = leitura ? "" : $(tela ? "ltPin" : "loginPin").value.trim();
+        nome = await acao({ op: "login", nome: $(tela ? "ltNome" : "loginNome").value, pin });
+      } catch (err) {
+        if (!tela) throw err;
+        if (!leitura && $("ltToken")) { const n = $("ltNome").value; mostrarLogin(); $("ltNome").value = n; } // token já conectado: some o campo do token
+        else { btn.disabled = false; btn.textContent = "Entrar"; }
+        $("ltErro").textContent = err.message; $("ltErro").hidden = false;
+        return;
+      }
       sessao = { nome, pin }; try { sessionStorage.setItem("sessao", JSON.stringify(sessao)); } catch {}
       view = tela ? null : nome; render();
       if (!mostrarBoasVindas()) { fecharBoasVindas(); toast(`Fala, ${nome}!`); }
