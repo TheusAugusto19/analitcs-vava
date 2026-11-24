@@ -1168,8 +1168,9 @@ async function falarBoasVindas(nome, vozId){
   const orb = document.querySelector(".bv-orb"), id = vozId || (nome ? vozDe(nome) : "epaminondas");
   try { speechSynthesis.cancel(); } catch {}
   if (id === "mudo") return; // "Sem voz": mostra a tela, mas não fala
-  if (await tocarMp3(`vozes/${id}/${slug(nome || "geral")}.mp3`, orb)) return;
-  if (await tocarMp3(`vozes/${id}/geral.mp3`, orb)) return;
+  const v = `?t=${Date.now()}`; // sempre o áudio mais novo (o robô refaz quando a voz muda)
+  if (await tocarMp3(`vozes/${id}/${slug(nome || "geral")}.mp3${v}`, orb)) return;
+  if (await tocarMp3(`vozes/${id}/geral.mp3${v}`, orb)) return;
   if (!("speechSynthesis" in window)) { orb?.classList.add("tocar"); return; }
   const c = VOZES[id] || VOZES.epaminondas;
   const falar = () => {
