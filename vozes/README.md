@@ -13,3 +13,9 @@ vozes/clara/theus.mp3
 
 Sem o mp3, o site usa a voz de leitura do navegador (não funciona no app do Discord).
 Para enviar: no GitHub, abra a pasta da voz → Add file → Upload files.
+
+## Créditos
+
+Áudios atuais gerados com o [Piper](https://github.com/rhasspy/piper) usando a voz `pt-br-edresson-low`,
+treinada com o [TTS-Portuguese-Corpus](https://github.com/Edresson/TTS-Portuguese-Corpus) (licença CC BY 4.0).
+A Clara é a mesma voz com o tom ajustado. Para trocar, é só enviar outro mp3 com o mesmo nome.

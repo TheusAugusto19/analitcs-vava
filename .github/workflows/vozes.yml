@@ -1,0 +1,48 @@
+# Gera os áudios de boas-vindas de quem ainda não tem (pessoa nova ou nome trocado).
+name: Vozes de boas-vindas
+
+on:
+  push:
+    branches: [main]
+    paths: [placar.json, scripts/gerar_vozes.py]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vozes
+  cancel-in-progress: false
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar o Piper e o ffmpeg
+        run: |
+          pip install piper-tts
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
+      - name: Baixar a voz pt-BR
+        run: |
+          curl -sL -o voz.tgz https://github.com/rhasspy/piper/releases/download/v0.0.2/voice-pt-br-edresson-low.tar.gz
+          mkdir -p modelo && tar -xzf voz.tgz -C modelo
+
+      - name: Gerar os áudios que faltam
+        run: python scripts/gerar_vozes.py modelo/pt-br-edresson-low.onnx
+
+      - name: Salvar no repositório
+        run: |
+          git add vozes
+          if git diff --cached --quiet; then echo "Nada novo."; exit 0; fi
+          git config user.name "vozes-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Vozes de boas-vindas para perfis novos"
+          for i in 1 2 3; do git pull --rebase -q origin main && git push && exit 0; sleep 5; done
+          exit 1
