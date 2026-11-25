@@ -9533,6 +9533,36 @@
             "a": 6,
             "hs": 29,
             "acs": 230
+          },
+          "3a2e0a99-d968-4463-9056-e66fbada05f9": {
+            "dia": "2026-11-25",
+            "hora": "19:13",
+            "resultado": "V",
+            "placar": "13-10",
+            "mapa": "Sunset",
+            "agente": "Chamber",
+            "agenteId": "22697a3d-45bf-8dd7-4fec-84a9e28c69d7",
+            "mapaId": "92584fbe-486a-b1b2-9faa-39b0f486b498",
+            "k": 17,
+            "d": 17,
+            "a": 6,
+            "hs": 23,
+            "acs": 207
+          },
+          "a1ae8770-ea35-479e-adf5-739f71a5409e": {
+            "dia": "2026-11-25",
+            "hora": "18:49",
+            "resultado": "D",
+            "placar": "2-13",
+            "mapa": "Summit",
+            "agente": "Chamber",
+            "agenteId": "22697a3d-45bf-8dd7-4fec-84a9e28c69d7",
+            "mapaId": "756da597-416b-c0f2-f47b-afbdf28670bc",
+            "k": 4,
+            "d": 13,
+            "a": 0,
+            "hs": 27,
+            "acs": 87
           }
         }
       }
