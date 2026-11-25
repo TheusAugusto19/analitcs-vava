@@ -9518,6 +9518,21 @@
             "a": 3,
             "hs": 23,
             "acs": 155
+          },
+          "0bbac18c-7757-4f31-85f4-3b8dd8b94c86": {
+            "dia": "2026-11-24",
+            "hora": "21:03",
+            "resultado": "V",
+            "placar": "13-7",
+            "mapa": "Summit",
+            "agente": "Chamber",
+            "agenteId": "22697a3d-45bf-8dd7-4fec-84a9e28c69d7",
+            "mapaId": "756da597-416b-c0f2-f47b-afbdf28670bc",
+            "k": 16,
+            "d": 11,
+            "a": 6,
+            "hs": 29,
+            "acs": 230
           }
         }
       }
